@@ -69,7 +69,7 @@ async function startActivity(flowId: string) {
   }
 }
 
-let activity1Response: ApiResponse;
+//let activity1Response: ApiResponse;
 let activity2Response: ApiResponse;
 //let activity3Response: ApiResponse
 //let activity4Response: ApiResponse
@@ -273,6 +273,7 @@ WA.onInit()
   })
   .catch((e) => console.error(e));
 
+/*
 async function postDataToAPI(
   action: string,
   body: object
@@ -309,6 +310,6 @@ async function postDataToAPI(
     console.error('Error:', error);
     throw error; // Rethrow the error for the caller to handle
   }
-}
+}*/
 
 export {};
