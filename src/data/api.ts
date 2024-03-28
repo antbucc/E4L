@@ -1,4 +1,4 @@
-import axiosCreate, { AxiosResponse } from 'axios';
+import axiosCreate, {  AxiosResponse } from 'axios';
 
 export type UserFlowBody = {
   userId: string;

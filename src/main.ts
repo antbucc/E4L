@@ -82,7 +82,7 @@ WA.onInit()
     try {
       console.log('testing startttttttttttt');
       const exerciseType = await startActivity(
-        '95316bc8-caea-486f-95ad-ba635a9608c4'
+        'ed4a59c8-864e-4aeb-884b-7c105d066124'
       );
       console.log('where to go', exerciseType);
       //open a timed popup to send the user to the right location
