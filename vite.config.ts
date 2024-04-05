@@ -1,4 +1,5 @@
 import 'dotenv/config';
+import { resolve } from 'path';
 import { defineConfig } from 'vite';
 import {
   getMaps,
@@ -58,5 +59,10 @@ export default defineConfig({
       'Cache-Control': 'no-cache, no-store, must-revalidate',
     },
     open: '/',
-  },
+  },resolve: {
+    alias: [{ 
+      find: "@server", 
+      replacement: resolve(__dirname, './') 
+    }]
+  }
 });
