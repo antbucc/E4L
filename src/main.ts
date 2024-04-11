@@ -224,7 +224,7 @@ WA.onInit()
       }
       const test = await getActualActivity();
       const URL =
-        process.env.WEBAPP_URL +
+        import.meta.env.VITE_WEBAPP_URL +
         '/?&ctx=' +
         ctx +
         '&rememberTipologyQuiz=' +

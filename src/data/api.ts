@@ -1,6 +1,5 @@
 "use strict";
 import axiosCreate, { AxiosResponse } from 'axios';
-import.meta.env;
 
 export type UserFlowBody = {
   userId: string;
@@ -42,7 +41,7 @@ export type PolyglotNodeValidation = PolyglotNode & {
 };
 
 const execution = axiosCreate.create({
-  baseURL: process.env.BACK_URL,
+  baseURL: 'http://localhost:5000',
   headers: {
     'Content-Type': 'application/json',
   },
