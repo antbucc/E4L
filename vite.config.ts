@@ -28,7 +28,7 @@ export default defineConfig({
             input: {
                 index: "./index.html",
                 ...getMapsScripts(maps),
-            },  
+            },
         },
     },
     plugins: [...getMapsOptimizers(maps, optimizerOptions)],

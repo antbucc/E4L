@@ -1,4 +1,3 @@
-"use strict";
 import axiosCreate, { AxiosResponse } from 'axios';
 
 export type UserFlowBody = {

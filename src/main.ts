@@ -6,6 +6,8 @@ import { API, PolyglotNodeValidation } from './data/api';
 
 console.log('Script started successfully');
 console.log('Tmaooooo ' + WA.room);
+//@ts-ignore
+console.log("http database"+ import.meta.env.VITE_BACK_URL);
 let ctx: string; //to be remove after becoming obsolete, global ctx to keep tracks of this execution
 
 // Define TypeScript interface for the API response
@@ -223,8 +225,9 @@ WA.onInit()
         console.error('Failed to get API response:', error);
       }
       const test = await getActualActivity();
+      console.log(process.env.VITE_WEBAPP_URL);
       const URL =
-        import.meta.env.VITE_WEBAPP_URL +
+        process.env.VITE_WEBAPP_URL +
         '/?&ctx=' +
         ctx +
         '&rememberTipologyQuiz=' +
