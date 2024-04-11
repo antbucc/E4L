@@ -1,4 +1,6 @@
-import axiosCreate, {  AxiosResponse } from 'axios';
+"use strict";
+import axiosCreate, { AxiosResponse } from 'axios';
+import.meta.env;
 
 export type UserFlowBody = {
   userId: string;
@@ -38,8 +40,6 @@ export type PolyglotNodeValidation = PolyglotNode & {
     type: string;
   }[];
 };
-
-require('dotenv').config();
 
 const execution = axiosCreate.create({
   baseURL: process.env.BACK_URL,

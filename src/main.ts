@@ -4,12 +4,6 @@ import { bootstrapExtra } from '@workadventure/scripting-api-extra';
 import { AxiosResponse } from 'axios';
 import { API, PolyglotNodeValidation } from './data/api';
 
-//problema da discutere:
-//la webapp è definita affinché se non devi cambiare piattaforma ti tiene lì
-//quindi definirei un'area unica per l'accesso alla WebApp
-//suddividendo le altre per attività esterne all'app
-//tipo miroboard, coding, ecc
-
 console.log('Script started successfully');
 console.log('Tmaooooo ' + WA.room);
 let ctx: string; //to be remove after becoming obsolete, global ctx to keep tracks of this execution
@@ -25,10 +19,10 @@ interface ApiResponse {
   // Add more properties as needed
 }
 
-function nextActivityBanner(type: string, ){
+function nextActivityBanner(type: string) {
   WA.ui.banner.openBanner({
     id: 'NextBanner',
-    text: 'Your next activity is "'+type+'", go to the correct area.',
+    text: 'Your next activity is "' + type + '", go to the correct area.',
     bgColor: '#000000',
     textColor: '#ffffff',
     closable: true,
@@ -162,7 +156,7 @@ WA.onInit()
     });
 
     WA.room.area.onLeave('ActivityType2').subscribe(async () => {
-      const nextActivity= await getActualActivity();
+      const nextActivity = await getActualActivity();
       nextActivityBanner(nextActivity.type);
       WA.ui.modal.closeModal();
     });
