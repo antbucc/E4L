@@ -23,11 +23,11 @@
     "prettier": "^3.2.5",
     "pretty-quick": "^4.0.0",
     "typescript": "^4.9.5",
+    "vite": "^4.3.9",
     "wa-map-optimizer-vite": "^1.1.28"
   },
   "dependencies": {
     "@workadventure/scripting-api-extra": "^1.4.8",
-    "axios": "^1.6.8",
-    "vite": "^5.2.8"
+    "axios": "^1.6.8"
   }
 }

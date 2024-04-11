@@ -1,9 +1,8 @@
 /// <reference types="@workadventure/iframe-api-typings" />
 
 import { bootstrapExtra } from '@workadventure/scripting-api-extra';
-console.log('Script started successfully');
-console.log("ID"+WA.player.playerId);
-import { API } from './data/api';
+import { AxiosResponse } from 'axios';
+import { API, PolyglotNodeValidation } from './data/api';
 
 //problema da discutere:
 //la webapp è definita affinché se non devi cambiare piattaforma ti tiene lì
@@ -11,6 +10,8 @@ import { API } from './data/api';
 //suddividendo le altre per attività esterne all'app
 //tipo miroboard, coding, ecc
 
+console.log('Script started successfully');
+console.log('Tmaooooo ' + WA.room);
 let ctx: string; //to be remove after becoming obsolete, global ctx to keep tracks of this execution
 
 // Define TypeScript interface for the API response
@@ -24,10 +25,10 @@ interface ApiResponse {
   // Add more properties as needed
 }
 
-function nextActivityBanner(type: string) {
+function nextActivityBanner(type: string, ){
   WA.ui.banner.openBanner({
     id: 'NextBanner',
-    text: 'Your next activity is "' + type + '", go to the correct area.',
+    text: 'Your next activity is "'+type+'", go to the correct area.',
     bgColor: '#000000',
     textColor: '#ffffff',
     closable: true,
@@ -35,10 +36,10 @@ function nextActivityBanner(type: string) {
   });
 }
 
-async function getActualActivity(): Promise<any> {
+async function getActualActivity(): Promise<PolyglotNodeValidation> {
   try {
     if (!ctx) throw 'No ctx detected';
-    const response = await API.getActualNode({ ctxId: ctx });
+    const response: AxiosResponse = await API.getActualNode({ ctxId: ctx });
     if (response.status != 200) {
       console.error('Error:', response.status, response.statusText);
       throw new Error(`HTTP error! Status: ${response.status}`);
@@ -53,7 +54,7 @@ async function getActualActivity(): Promise<any> {
 
 async function startActivity(flowId: string) {
   try {
-    const response = await API.getFirstNode({ flowId });
+    const response: AxiosResponse = await API.getFirstNode({ flowId });
     // Handle error responses
     if (response.status != 200) {
       console.error('Error:', response.status, response.statusText);
@@ -161,7 +162,7 @@ WA.onInit()
     });
 
     WA.room.area.onLeave('ActivityType2').subscribe(async () => {
-      const nextActivity = await getActualActivity();
+      const nextActivity= await getActualActivity();
       nextActivityBanner(nextActivity.type);
       WA.ui.modal.closeModal();
     });
