@@ -40,7 +40,8 @@ export type PolyglotNodeValidation = PolyglotNode & {
 };
 
 const execution = axiosCreate.create({
-  baseURL: 'http://localhost:5000',
+  //@ts-ignore
+  baseURL: import.meta.env.VITE_BACK_URL,
   headers: {
     'Content-Type': 'application/json',
   },
