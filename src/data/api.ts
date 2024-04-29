@@ -49,6 +49,9 @@ const execution = axiosCreate.create({
 });
 
 export const API = {
+  getLPList: (): Promise<AxiosResponse> => {
+    return execution.get<{}, AxiosResponse, {}>(`/api/flows/`);
+  },
   getActualNode: (body: CtxBody /*UserFlowBody*/): Promise<AxiosResponse> => {
     return execution.post<{}, AxiosResponse, {}>(`/api/execution/actual`, body);
   },

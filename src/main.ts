@@ -11,21 +11,7 @@ let ctx: string; //to be remove after becoming obsolete, global ctx to keep trac
 let actualActivity: PolyglotNodeValidation;
 let wrongAreaPopup: Popup;
 let menuPopup: Popup;
-
-async function nextActivityBanner() {
-  await getActualActivity();
-  WA.ui.banner.openBanner({
-    id: 'NextBanner',
-    text:
-      'Your next activity is "' +
-      actualActivity.type +
-      '", go to the correct area.',
-    bgColor: '#000000',
-    textColor: '#ffffff',
-    closable: true,
-    timeToClose: 6000,
-  });
-}
+const flowId = 'acd235b9-7504-4975-a0c7-96914480d498';
 
 async function nextActivityBannerV2(areaPopup: string) {
   await getActualActivity();
@@ -66,6 +52,22 @@ async function getActualActivity() {
   }
 }
 
+async function getLPList() {
+  try {
+    const response: AxiosResponse = await API.getLPList();
+    if (response.status != 200) {
+      console.error('Error:', response.status, response.statusText);
+      throw new Error(`HTTP error! Status: ${response.status}`);
+    }
+    console.log(response.data);
+    return response.data;
+  } catch (error) {
+    // Handle network errors or other exceptions
+    console.error('Error:', error);
+    throw error; // Rethrow the error for the caller to handle
+  }
+}
+
 async function startActivity(flowId: string): Promise<any> {
   try {
     const response: AxiosResponse = await API.getFirstNode({ flowId });
@@ -87,35 +89,40 @@ async function startActivity(flowId: string): Promise<any> {
 WA.onInit()
   .then(async () => {
     console.log('Scripting API ready');
-    try {
-      await startActivity('acd235b9-7504-4975-a0c7-96914480d498');
-      await getActualActivity();
-      wrongAreaPopup = WA.ui.openPopup(
-        'instructions',
-        'Your next activity is in "' +
-          actualActivity.platform +
-          '", go to the correct area.',
-        [
-          {
-            label: 'Close',
-            className: 'normal',
-            callback: (popup) => {
-              // Close the popup when the "Close" button is pressed.
-              popup.close();
-            },
-          },
-        ]
-      );
-      setTimeout(function () {
-        wrongAreaPopup.close();
-      }, 2000);
-      //open a timed popup to send the user to the right location
-    } catch (error) {
-      // Handle errors if the API call fails
-      console.error('Failed to get API response:', error);
-    }
+
+    await startActivity(flowId);
     let website: Promise<UIWebsite>;
     // Flows Menu
+
+    WA.room.area.onEnter('Entry').subscribe(async () => {
+      try {
+        await getActualActivity();
+        wrongAreaPopup = WA.ui.openPopup(
+          'instructions',
+          'Your next activity is in "' +
+            actualActivity.platform +
+            '", go to the correct area.',
+          [
+            {
+              label: 'Close',
+              className: 'normal',
+              callback: (popup) => {
+                // Close the popup when the "Close" button is pressed.
+                popup.close();
+              },
+            },
+          ]
+        );
+        setTimeout(function () {
+          wrongAreaPopup.close();
+        }, 2000);
+        //open a timed popup to send the user to the right location
+      } catch (error) {
+        // Handle errors if the API call fails
+        console.error('Failed to get API response:', error);
+      }
+    });
+
     WA.room.area.onEnter('FlowsMenu').subscribe(async () => {
       try {
         console.log('testing FlowsMenu');
@@ -136,6 +143,7 @@ WA.onInit()
         setTimeout(function () {
           menuPopup.close();
         }, 2000);
+        const list = getLPList();
         //open a timed popup to send the user to the right location
       } catch (error) {
         // Handle errors if the API call fails
@@ -168,10 +176,10 @@ WA.onInit()
           ctx +
           '&rememberTipologyQuiz=' +
           actualActivity.type;
-
         website = WA.ui.website.open({
           url: URL,
           allowApi: true,
+          allowPolicy: 'auto',
           position: {
             vertical: 'top',
             horizontal: 'right',
@@ -249,25 +257,30 @@ WA.onInit()
     WA.room.area.onEnter('ActivityType3').subscribe(async () => {
       // If you need to send data from the first call
       try {
-        console.log('activity3Response');
+        console.log('area Activity3');
         // You can use activity2Response in subsequent parts of your code
-        const URL = //@ts-ignore
-          import.meta.env.WEBAPP_URL +
-          '/?&ctx=' +
-          ctx +
-          '&rememberTipologyQuiz=' +
-          actualActivity.type;
-        if (actualActivity.platform != 'VSCode') {
+        if (actualActivity.platform != 'MiroBoard') {
           console.log('wrong spot, go to another area');
-          WA.ui.banner.openBanner({
-            id: 'MultichoiceQuestionBanner',
-            text: 'Wrong area, here you are able to make activity connected to the VSCode',
-            bgColor: '#000000',
-            textColor: '#ffffff',
-            closable: true,
-            timeToClose: 6000,
-          });
-        } /*
+          wrongAreaPopup = WA.ui.openPopup(
+            'BannerA3',
+            'Wrong area, here you are able to make activity connected to MiroBoard',
+            [
+              {
+                label: 'Close',
+                className: 'normal',
+                callback: (popup) => {
+                  // Close the popup when the "Close" button is pressed.
+                  popup.close();
+                },
+              },
+            ]
+          );
+          setTimeout(function () {
+            wrongAreaPopup.close();
+          }, 3000);
+          return;
+        }
+        /*
         WA.ui.modal.openModal({
           title: 'Activity type 3',
           src: URL,
@@ -295,29 +308,23 @@ WA.onInit()
     WA.room.area.onEnter('ActivityType4').subscribe(async () => {
       // If you need to send data from the first call
       try {
-        //@ts-ignore
-        console.log(import.meta.env.VITE_WEBAPP_URL);
-        const URL = //@ts-ignore
-          import.meta.env.VITE_WEBAPP_URL +
-          '/?&ctx=' +
-          ctx +
-          '&rememberTipologyQuiz=' +
-          actualActivity.type;
-        wrongAreaPopup = WA.ui.openPopup(
-          'BannerA4',
-          'Wrong area, here you can do multichoice question lessons!!!!!!!!!',
-          [
-            {
-              label: 'Close',
-              className: 'normal',
-              callback: (popup) => {
-                // Close the popup when the "Close" button is pressed.
-                popup.close();
+        if (actualActivity.platform != 'VSCode') {
+          wrongAreaPopup = WA.ui.openPopup(
+            'BannerA4',
+            'Wrong area, here you are able to make activity connected to the WebApp',
+            [
+              {
+                label: 'Close',
+                className: 'normal',
+                callback: (popup) => {
+                  // Close the popup when the "Close" button is pressed.
+                  popup.close();
+                },
               },
-            },
-          ]
-        );
-        console.log('hrere');
+            ]
+          );
+          return;
+        }
       } catch (error) {
         // Handle errors if the API call fails
         console.error('Failed to get API response:', error);
