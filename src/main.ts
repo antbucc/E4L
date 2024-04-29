@@ -8,14 +8,26 @@ import { Popup, UIWebsite } from '@workadventure/iframe-api-typings';
 console.log('Script started successfully');
 
 let ctx: string; //to be remove after becoming obsolete, global ctx to keep tracks of this execution
+let flow: string;
 let actualActivity: PolyglotNodeValidation;
 let wrongAreaPopup: Popup;
 let menuPopup: Popup;
+let activity1Banner: Popup;
 const flowId = 'acd235b9-7504-4975-a0c7-96914480d498';
+
+let currentPopup: any = undefined;
+
+function closePopup() {
+  if (currentPopup !== undefined) {
+    currentPopup.close();
+    currentPopup = undefined;
+  }
+}
 
 async function nextActivityBannerV2(areaPopup: string) {
   await getActualActivity();
-  const nextActivityPopup = WA.ui.openPopup(
+  closePopup();
+  currentPopup = WA.ui.openPopup(
     areaPopup,
     'Your next activity is in "' +
       actualActivity.platform +
@@ -24,16 +36,16 @@ async function nextActivityBannerV2(areaPopup: string) {
       {
         label: 'Close',
         className: 'normal',
-        callback: (popup) => {
+        callback: () => {
           // Close the popup when the "Close" button is pressed.
-          popup.close();
+          closePopup();
         },
       },
     ]
   );
   setTimeout(function () {
-    nextActivityPopup.close();
-  }, 2000);
+    closePopup();
+  }, 3000);
 }
 
 async function getActualActivity() {
@@ -96,8 +108,30 @@ WA.onInit()
 
     WA.room.area.onEnter('Entry').subscribe(async () => {
       try {
+        const playerFlows = WA.player.state.flows;
+
+        if (!playerFlows) {
+          const instructionPopup = WA.ui.openPopup(
+            'instructions',
+            'You have not selected a Learning Path, please go to the menu area to choose a path.',
+            [
+              {
+                label: 'Close',
+                className: 'normal',
+                callback: (popup) => {
+                  // Close the popup when the "Close" button is pressed.
+                  popup.close();
+                },
+              },
+            ]
+          );
+          setTimeout(function () {
+            instructionPopup.close();
+          }, 3000);
+        }
+
         await getActualActivity();
-        wrongAreaPopup = WA.ui.openPopup(
+        const instructionPopup = WA.ui.openPopup(
           'instructions',
           'Your next activity is in "' +
             actualActivity.platform +
@@ -114,8 +148,8 @@ WA.onInit()
           ]
         );
         setTimeout(function () {
-          wrongAreaPopup.close();
-        }, 2000);
+          instructionPopup.close();
+        }, 3000);
         //open a timed popup to send the user to the right location
       } catch (error) {
         // Handle errors if the API call fails
@@ -142,8 +176,13 @@ WA.onInit()
         );
         setTimeout(function () {
           menuPopup.close();
-        }, 2000);
-        const list = getLPList();
+        }, 3000);
+
+        WA.nav.openCoWebSite(
+          //@ts-ignore
+          import.meta.env.VITE_WEBAPP_URL + '/flowsMenu',
+          true
+        );
         //open a timed popup to send the user to the right location
       } catch (error) {
         // Handle errors if the API call fails
@@ -151,7 +190,7 @@ WA.onInit()
     });
     WA.room.area.onLeave('FlowsMenu').subscribe(async () => {
       //wrongAreaPopup.close();
-      if (menuPopup) menuPopup.close();
+      WA.nav.closeCoWebSite();
     });
 
     WA.room.area.onEnter('ActivityType1').subscribe(async () => {
@@ -176,33 +215,15 @@ WA.onInit()
           ctx +
           '&rememberTipologyQuiz=' +
           actualActivity.type;
-        website = WA.ui.website.open({
-          url: URL,
-          allowApi: true,
-          allowPolicy: 'auto',
-          position: {
-            vertical: 'top',
-            horizontal: 'right',
-          },
-          size: {
-            // Size on the UI (available units: px|em|%|cm|in|pc|pt|mm|ex|vw|vh|rem and others values auto|inherit)
-            height: '100%',
-            width: '50%',
-          },
-        });
+        WA.nav.openCoWebSite(URL);
         //open a timed popup to send the user to the right location
       } catch (error) {
         // Handle errors if the API call fails
       }
     });
     WA.room.area.onLeave('ActivityType1').subscribe(async () => {
-      //wrongAreaPopup.close();
+      WA.nav.closeCoWebSite();
       nextActivityBannerV2('BannerA1');
-      const closingPopup = wrongAreaPopup;
-      setTimeout(function () {
-        closingPopup.close();
-      }, 3000);
-      (await website).close();
     });
 
     // ACTIVITY TYPE 2
@@ -211,32 +232,6 @@ WA.onInit()
       console.log('ctx:', ctx);
       try {
         console.log('testing ACTIVITYTYPE2');
-        const URL =
-          //@ts-ignore
-          import.meta.env.VITE_WEBAPP_URL +
-          '/?&ctx=' +
-          ctx +
-          '&rememberTipologyQuiz=' +
-          actualActivity.type;
-        if (actualActivity.platform != 'WebApp') {
-          console.log('wrong spot, go to another area');
-          WA.ui.banner.openBanner({
-            id: 'ReadMaterialBanner',
-            text: 'Wrong area, here you are able to make activity connected to the WebApp',
-            bgColor: '#000000',
-            textColor: '#ffffff',
-            closable: true,
-            timeToClose: 6000,
-          });
-          return;
-        }
-        WA.ui.modal.openModal({
-          title: 'Activity type 2',
-          src: URL,
-          allowApi: true,
-          position: 'right',
-          allow: null,
-        });
       } catch (error) {
         // Handle errors if the API call fails
         console.error('Failed to get API response:', error);
@@ -246,11 +241,6 @@ WA.onInit()
     WA.room.area.onLeave('ActivityType2').subscribe(async () => {
       //wrongAreaPopup.close();
       nextActivityBannerV2('BannerA2');
-      const closingPopup = wrongAreaPopup;
-      setTimeout(function () {
-        closingPopup.close();
-      }, 3000);
-      WA.ui.modal.closeModal();
     });
 
     // ACTIVITY TYPE 3
@@ -261,22 +251,23 @@ WA.onInit()
         // You can use activity2Response in subsequent parts of your code
         if (actualActivity.platform != 'MiroBoard') {
           console.log('wrong spot, go to another area');
-          wrongAreaPopup = WA.ui.openPopup(
+          closePopup();
+          currentPopup = WA.ui.openPopup(
             'BannerA3',
             'Wrong area, here you are able to make activity connected to MiroBoard',
             [
               {
                 label: 'Close',
                 className: 'normal',
-                callback: (popup) => {
+                callback: () => {
                   // Close the popup when the "Close" button is pressed.
-                  popup.close();
+                  closePopup();
                 },
               },
             ]
           );
           setTimeout(function () {
-            wrongAreaPopup.close();
+            closePopup();
           }, 3000);
           return;
         }

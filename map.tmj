@@ -550,6 +550,12 @@
                  "height":96,
                  "id":21,
                  "name":"ActivityType2",
+                 "properties":[
+                        {
+                         "name":"jitsiRoom",
+                         "type":"string",
+                         "value":"PrivateSession"
+                        }],
                  "rotation":0,
                  "type":"area",
                  "visible":true,
@@ -616,17 +622,6 @@
                  "width":100,
                  "x":650,
                  "y":290
-                }, 
-                {
-                 "height":0,
-                 "id":27,
-                 "name":"",
-                 "rotation":0,
-                 "type":"",
-                 "visible":true,
-                 "width":0,
-                 "x":400.5,
-                 "y":316.5
                 }, 
                 {
                  "height":60,
