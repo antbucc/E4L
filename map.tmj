@@ -517,17 +517,6 @@
                  "height":160,
                  "id":16,
                  "name":"ActivityType4",
-                 "properties":[
-                        {
-                         "name":"jitsiRoom",
-                         "type":"string",
-                         "value":"MeetingRoom"
-                        }, 
-                        {
-                         "name":"jitsiTrigger",
-                         "type":"string",
-                         "value":"onaction"
-                        }],
                  "rotation":0,
                  "type":"area",
                  "visible":true,

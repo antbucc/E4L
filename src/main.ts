@@ -3,31 +3,50 @@
 import { bootstrapExtra } from '@workadventure/scripting-api-extra';
 import { AxiosResponse } from 'axios';
 import { API, PolyglotNodeValidation } from './data/api';
-import { Popup, UIWebsite } from '@workadventure/iframe-api-typings';
+import { CoWebsite, Popup, UIWebsite } from '@workadventure/iframe-api-typings';
 
 console.log('Script started successfully');
 
 let ctx: string; //to be remove after becoming obsolete, global ctx to keep tracks of this execution
 let flow: string;
 let actualActivity: PolyglotNodeValidation;
-let wrongAreaPopup: Popup;
 let menuPopup: Popup;
-let activity1Banner: Popup;
+let VSCodePopup: Popup;
 const flowId = 'acd235b9-7504-4975-a0c7-96914480d498';
-
-let currentPopup: any = undefined;
+let webSite: CoWebsite;
+let wrongPopup: any = undefined;
 
 function closePopup() {
-  if (currentPopup !== undefined) {
-    currentPopup.close();
-    currentPopup = undefined;
+  if (wrongPopup !== undefined) {
+    wrongPopup.close();
+    wrongPopup = undefined;
   }
 }
 
+function wrongAreaFunction(where: string, activity: string) {
+  closePopup();
+  wrongPopup = WA.ui.openPopup(
+    where,
+    'Wrong area, here you are able to make activity connected to ' + activity,
+    [
+      {
+        label: 'Close',
+        className: 'normal',
+        callback: () => {
+          // Close the popup when the "Close" button is pressed.
+          closePopup();
+        },
+      },
+    ]
+  );
+  setTimeout(function () {
+    closePopup();
+  }, 3000);
+}
 async function nextActivityBannerV2(areaPopup: string) {
   await getActualActivity();
   closePopup();
-  currentPopup = WA.ui.openPopup(
+  wrongPopup = WA.ui.openPopup(
     areaPopup,
     'Your next activity is in "' +
       actualActivity.platform +
@@ -101,7 +120,7 @@ async function startActivity(flowId: string): Promise<any> {
 WA.onInit()
   .then(async () => {
     console.log('Scripting API ready');
-
+    WA.player.state.flows = { flowId: 'ctxId' };
     await startActivity(flowId);
     let website: Promise<UIWebsite>;
     // Flows Menu
@@ -178,7 +197,7 @@ WA.onInit()
           menuPopup.close();
         }, 3000);
 
-        WA.nav.openCoWebSite(
+        webSite = await WA.nav.openCoWebSite(
           //@ts-ignore
           import.meta.env.VITE_WEBAPP_URL + '/flowsMenu',
           true
@@ -190,7 +209,7 @@ WA.onInit()
     });
     WA.room.area.onLeave('FlowsMenu').subscribe(async () => {
       //wrongAreaPopup.close();
-      WA.nav.closeCoWebSite();
+      webSite.close();
     });
 
     WA.room.area.onEnter('ActivityType1').subscribe(async () => {
@@ -215,14 +234,14 @@ WA.onInit()
           ctx +
           '&rememberTipologyQuiz=' +
           actualActivity.type;
-        WA.nav.openCoWebSite(URL);
+        webSite = await WA.nav.openCoWebSite(URL);
         //open a timed popup to send the user to the right location
       } catch (error) {
         // Handle errors if the API call fails
       }
     });
     WA.room.area.onLeave('ActivityType1').subscribe(async () => {
-      WA.nav.closeCoWebSite();
+      webSite.close();
       nextActivityBannerV2('BannerA1');
     });
 
@@ -251,24 +270,7 @@ WA.onInit()
         // You can use activity2Response in subsequent parts of your code
         if (actualActivity.platform != 'MiroBoard') {
           console.log('wrong spot, go to another area');
-          closePopup();
-          currentPopup = WA.ui.openPopup(
-            'BannerA3',
-            'Wrong area, here you are able to make activity connected to MiroBoard',
-            [
-              {
-                label: 'Close',
-                className: 'normal',
-                callback: () => {
-                  // Close the popup when the "Close" button is pressed.
-                  closePopup();
-                },
-              },
-            ]
-          );
-          setTimeout(function () {
-            closePopup();
-          }, 3000);
+          wrongAreaFunction('BannerA3', 'MiroBoard');
           return;
         }
         /*
@@ -288,10 +290,6 @@ WA.onInit()
     WA.room.area.onLeave('ActivityType3').subscribe(async () => {
       //wrongAreaPopup.close();
       nextActivityBannerV2('BannerA3');
-      const closingPopup = wrongAreaPopup;
-      setTimeout(function () {
-        closingPopup.close();
-      }, 3000);
       WA.ui.modal.closeModal();
     });
 
@@ -300,22 +298,28 @@ WA.onInit()
       // If you need to send data from the first call
       try {
         if (actualActivity.platform != 'VSCode') {
-          wrongAreaPopup = WA.ui.openPopup(
-            'BannerA4',
-            'Wrong area, here you are able to make activity connected to the WebApp',
-            [
-              {
-                label: 'Close',
-                className: 'normal',
-                callback: (popup) => {
-                  // Close the popup when the "Close" button is pressed.
-                  popup.close();
-                },
-              },
-            ]
-          );
+          wrongAreaFunction('BannerA4', 'VSCode');
           return;
         }
+        closePopup();
+        VSCodePopup = WA.ui.openPopup(
+          'BannerA4',
+          'Download and open your notebook (run this link for the download: ' + //@ts-ignore
+            import.meta.env.VITE_WEBAPP_URL +
+            '/api/flows/' +
+            ctx +
+            '/run ).\nExecute the notebook in VSCode to complete the exercise',
+          [
+            {
+              label: 'Close',
+              className: 'normal',
+              callback: (popup) => {
+                // Close the popup when the "Close" button is pressed.
+                popup.close();
+              },
+            },
+          ]
+        );
       } catch (error) {
         // Handle errors if the API call fails
         console.error('Failed to get API response:', error);
@@ -323,7 +327,6 @@ WA.onInit()
     });
 
     WA.room.area.onLeave('ActivityType4').subscribe(async () => {
-      wrongAreaPopup.close();
       nextActivityBannerV2('BannerA4');
     });
 
