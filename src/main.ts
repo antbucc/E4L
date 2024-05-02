@@ -84,6 +84,7 @@ async function getActualActivity() {
 
 async function startActivity(flowId: string): Promise<any> {
   try {
+    
     const response: AxiosResponse = await API.getFirstNode({ flowId });
     // Handle error responses
     if (response.status != 200) {
@@ -91,6 +92,7 @@ async function startActivity(flowId: string): Promise<any> {
       throw new Error(`HTTP error! Status: ${response.status}`);
     }
     ctx = response.data.ctx;
+   
     return;
   } catch (error) {
     // Handle network errors or other exceptions
@@ -104,14 +106,18 @@ WA.onInit()
   .then(async () => {
     console.log('Scripting API ready');
     WA.player.state.flows = { flowId: 'ctxId' };
-    await startActivity(flowId);
+    
+  // /// SE DECOMMENTO QUESTA RIGA NON MI FUNZIONA IL RESTO...FORSE
+  // DOBBIAMO METTERE UN CHECK CHE SE HA SELEZIONATO IL FLOW ALLORA POSSIAMO ESEGUIRLO e quind entrare.
+  // await startActivity(flowId);
     // Flows Menu
 
     WA.room.area.onEnter('Entry').subscribe(async () => {
       try {
+       
         const playerFlows = WA.player.state.flows;
-
-        if (!playerFlows) {
+        
+        if (playerFlows) {
           const instructionPopup = WA.ui.openPopup(
             'instructions',
             'You have not selected a Learning Path, please go to the menu area to choose a path.',
@@ -157,6 +163,7 @@ WA.onInit()
         console.error('Failed to get API response:', error);
       }
     });
+
     WA.room.area.onEnter('FlowsMenu').subscribe(async () => {
       try {
         console.log('testing FlowsMenu');
@@ -179,7 +186,7 @@ WA.onInit()
         }, 3000);
 
         webSite = await WA.nav.openCoWebSite(
-          'http://localhost:3000/flows',
+          'https://polyglot-webapp.polyglot-edu.com/?flowList',
           true
         );
         //open a timed popup to send the user to the right location
@@ -191,6 +198,7 @@ WA.onInit()
       //wrongAreaPopup.close();
       webSite.close();
     });
+    
 
     WA.room.area.onEnter('ActivityType1').subscribe(async () => {
       try {
