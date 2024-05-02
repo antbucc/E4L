@@ -3,15 +3,14 @@
 import { bootstrapExtra } from '@workadventure/scripting-api-extra';
 import { AxiosResponse } from 'axios';
 import { API, PolyglotNodeValidation } from './data/api';
-import { CoWebsite, Popup, UIWebsite } from '@workadventure/iframe-api-typings';
+import { CoWebsite, Popup } from '@workadventure/iframe-api-typings';
 
 console.log('Script started successfully');
 
 let ctx: string; //to be remove after becoming obsolete, global ctx to keep tracks of this execution
-let flow: string;
+//let flow: string;
 let actualActivity: PolyglotNodeValidation;
 let menuPopup: Popup;
-let VSCodePopup: Popup;
 const flowId = 'acd235b9-7504-4975-a0c7-96914480d498';
 let webSite: CoWebsite;
 let wrongPopup: any = undefined;
@@ -83,22 +82,6 @@ async function getActualActivity() {
   }
 }
 
-async function getLPList() {
-  try {
-    const response: AxiosResponse = await API.getLPList();
-    if (response.status != 200) {
-      console.error('Error:', response.status, response.statusText);
-      throw new Error(`HTTP error! Status: ${response.status}`);
-    }
-    console.log(response.data);
-    return response.data;
-  } catch (error) {
-    // Handle network errors or other exceptions
-    console.error('Error:', error);
-    throw error; // Rethrow the error for the caller to handle
-  }
-}
-
 async function startActivity(flowId: string): Promise<any> {
   try {
     const response: AxiosResponse = await API.getFirstNode({ flowId });
@@ -122,7 +105,6 @@ WA.onInit()
     console.log('Scripting API ready');
     WA.player.state.flows = { flowId: 'ctxId' };
     await startActivity(flowId);
-    let website: Promise<UIWebsite>;
     // Flows Menu
 
     WA.room.area.onEnter('Entry').subscribe(async () => {
@@ -175,7 +157,6 @@ WA.onInit()
         console.error('Failed to get API response:', error);
       }
     });
-
     WA.room.area.onEnter('FlowsMenu').subscribe(async () => {
       try {
         console.log('testing FlowsMenu');
@@ -198,8 +179,7 @@ WA.onInit()
         }, 3000);
 
         webSite = await WA.nav.openCoWebSite(
-          //@ts-ignore
-          import.meta.env.VITE_WEBAPP_URL + '/flowsMenu',
+          'http://localhost:3000/flows',
           true
         );
         //open a timed popup to send the user to the right location
@@ -268,19 +248,16 @@ WA.onInit()
       try {
         console.log('area Activity3');
         // You can use activity2Response in subsequent parts of your code
-        if (actualActivity.platform != 'MiroBoard') {
+        /*if (actualActivity.platform != 'MiroBoard') {
           console.log('wrong spot, go to another area');
           wrongAreaFunction('BannerA3', 'MiroBoard');
           return;
-        }
-        /*
-        WA.ui.modal.openModal({
-          title: 'Activity type 3',
-          src: URL,
-          allow: 'fullscreen',
-          allowApi: true,
-          position: 'center',
-        });*/
+        }*/
+        
+        webSite = await WA.nav.openCoWebSite(
+          'https://miro.com/app/board/uXjVKM6hUiY=/?share_link_id=721292236858',
+          true
+        );
       } catch (error) {
         // Handle errors if the API call fails
         console.error('Failed to get API response:', error);
@@ -289,8 +266,7 @@ WA.onInit()
 
     WA.room.area.onLeave('ActivityType3').subscribe(async () => {
       //wrongAreaPopup.close();
-      nextActivityBannerV2('BannerA3');
-      WA.ui.modal.closeModal();
+      nextActivityBannerV2('BannerA3');webSite.close();
     });
 
     // ACTIVITY TYPE 4
@@ -302,10 +278,10 @@ WA.onInit()
           return;
         }
         closePopup();
-        VSCodePopup = WA.ui.openPopup(
+        WA.ui.openPopup(
           'BannerA4',
           'Download and open your notebook (run this link for the download: ' + //@ts-ignore
-            import.meta.env.VITE_WEBAPP_URL +
+            import.meta.env.VITE_BACK_URL +
             '/api/flows/' +
             ctx +
             '/run ).\nExecute the notebook in VSCode to complete the exercise',

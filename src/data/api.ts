@@ -62,4 +62,8 @@ export const API = {
   getNextNode: (body: NextCtxBody /*NextBody*/): Promise<AxiosResponse> => {
     return execution.post<{}, AxiosResponse, {}>(`/api/execution/next`, body);
   },
+  loadFlowList: (query?: string): Promise<AxiosResponse> => {
+    const queryParams = query ? '?q=' + query : '';
+    return execution.get(`/api/flows` + queryParams);
+  },
 };

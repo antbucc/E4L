@@ -17,6 +17,7 @@
   },
   "devDependencies": {
     "@types/node": "^18.15.11",
+    "@types/react": "^18.3.1",
     "@workadventure/iframe-api-typings": "^1.17.1",
     "dotenv": "^16.4.5",
     "husky": "^9.0.11",
@@ -27,7 +28,12 @@
     "wa-map-optimizer-vite": "^1.1.28"
   },
   "dependencies": {
+    "@chakra-ui/icons": "^2.1.1",
+    "@chakra-ui/react": "^2.8.2",
+    "@choc-ui/chakra-autocomplete": "^5.4.0",
+    "@nikolovlazar/chakra-ui-prose": "^1.2.1",
     "@workadventure/scripting-api-extra": "^1.4.8",
-    "axios": "^1.6.8"
+    "axios": "^1.6.8",
+    "react": "^18.3.1"
   }
 }
