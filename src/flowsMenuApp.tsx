@@ -19,7 +19,7 @@ const theme = extendTheme(
 export default function App() {
   return (
     <ChakraProvider theme={theme}>
-        <FlowsListWorkadventure />
+      <FlowsListWorkadventure />
     </ChakraProvider>
   );
 }

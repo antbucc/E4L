@@ -11,7 +11,7 @@ let ctx: string; //to be remove after becoming obsolete, global ctx to keep trac
 //let flow: string;
 let actualActivity: PolyglotNodeValidation;
 let menuPopup: Popup;
-const flowId = 'acd235b9-7504-4975-a0c7-96914480d498';
+//const flowId = 'acd235b9-7504-4975-a0c7-96914480d498';
 let webSite: CoWebsite;
 let wrongPopup: any = undefined;
 
@@ -84,7 +84,6 @@ async function getActualActivity() {
 
 async function startActivity(flowId: string): Promise<any> {
   try {
-    
     const response: AxiosResponse = await API.getFirstNode({ flowId });
     // Handle error responses
     if (response.status != 200) {
@@ -92,7 +91,7 @@ async function startActivity(flowId: string): Promise<any> {
       throw new Error(`HTTP error! Status: ${response.status}`);
     }
     ctx = response.data.ctx;
-   
+
     return;
   } catch (error) {
     // Handle network errors or other exceptions
@@ -101,22 +100,31 @@ async function startActivity(flowId: string): Promise<any> {
   }
 }
 
+window.addEventListener('message', async function (event) {
+  if (event.data.flowId) console.log('first way ' + event.data.flowId); // Message received from child
+  await startActivity(event.data.flowId);
+});
+
+window.document.addEventListener('myCustomEvent', handleEvent, false);
+function handleEvent(e: any) {
+  console.log('second way ' + e.detail); // outputs: {foo: 'bar'}
+}
+
 // Waiting for the API to be ready
 WA.onInit()
   .then(async () => {
     console.log('Scripting API ready');
     WA.player.state.flows = { flowId: 'ctxId' };
-    
-  // /// SE DECOMMENTO QUESTA RIGA NON MI FUNZIONA IL RESTO...FORSE
-  // DOBBIAMO METTERE UN CHECK CHE SE HA SELEZIONATO IL FLOW ALLORA POSSIAMO ESEGUIRLO e quind entrare.
-  // await startActivity(flowId);
+
+    // /// SE DECOMMENTO QUESTA RIGA NON MI FUNZIONA IL RESTO...FORSE
+    // DOBBIAMO METTERE UN CHECK CHE SE HA SELEZIONATO IL FLOW ALLORA POSSIAMO ESEGUIRLO e quind entrare.
+    // await startActivity(flowId);
     // Flows Menu
 
     WA.room.area.onEnter('Entry').subscribe(async () => {
       try {
-       
         const playerFlows = WA.player.state.flows;
-        
+
         if (playerFlows) {
           const instructionPopup = WA.ui.openPopup(
             'instructions',
@@ -186,7 +194,7 @@ WA.onInit()
         }, 3000);
 
         webSite = await WA.nav.openCoWebSite(
-          'https://polyglot-webapp.polyglot-edu.com/?flowList',
+          'http://localhost:3000/?flowList',
           true
         );
         //open a timed popup to send the user to the right location
@@ -198,7 +206,6 @@ WA.onInit()
       //wrongAreaPopup.close();
       webSite.close();
     });
-    
 
     WA.room.area.onEnter('ActivityType1').subscribe(async () => {
       try {
@@ -261,7 +268,7 @@ WA.onInit()
           wrongAreaFunction('BannerA3', 'MiroBoard');
           return;
         }*/
-        
+
         webSite = await WA.nav.openCoWebSite(
           'https://miro.com/app/board/uXjVKM6hUiY=/?share_link_id=721292236858',
           true
@@ -274,7 +281,8 @@ WA.onInit()
 
     WA.room.area.onLeave('ActivityType3').subscribe(async () => {
       //wrongAreaPopup.close();
-      nextActivityBannerV2('BannerA3');webSite.close();
+      nextActivityBannerV2('BannerA3');
+      webSite.close();
     });
 
     // ACTIVITY TYPE 4

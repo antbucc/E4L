@@ -108,7 +108,12 @@ const FlowsListWorkadventure = () => {
     dfOnOpen();
   }, [dfOnOpen, selectedFlowId]);
 
-  if (!flows) return (<><div>error</div></>);
+  if (!flows)
+    return (
+      <>
+        <div>error</div>
+      </>
+    );
   return (
     <>
       <Box px="10%">
