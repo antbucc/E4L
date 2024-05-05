@@ -3,7 +3,7 @@
 import { bootstrapExtra } from '@workadventure/scripting-api-extra';
 import { AxiosResponse } from 'axios';
 import { API, PolyglotNodeValidation } from './data/api';
-import { CoWebsite, Popup } from '@workadventure/iframe-api-typings';
+import { ActionMessage, CoWebsite, Popup } from '@workadventure/iframe-api-typings';
 
 console.log('Script started successfully');
 
@@ -11,7 +11,7 @@ let ctx: string; //to be remove after becoming obsolete, global ctx to keep trac
 //let flow: string;
 let actualActivity: PolyglotNodeValidation;
 let menuPopup: Popup;
-//const flowId = 'acd235b9-7504-4975-a0c7-96914480d498';
+const flowId = 'acd235b9-7504-4975-a0c7-96914480d498';
 let webSite: CoWebsite;
 let wrongPopup: any = undefined;
 
@@ -193,8 +193,8 @@ WA.onInit()
           menuPopup.close();
         }, 3000);
 
-        webSite = await WA.nav.openCoWebSite(
-          'http://localhost:3000/?flowList',
+        webSite = await WA.nav.openCoWebSite(//@ts-ignore
+          import.meta.env.VITE_WEBAPP_URL+'/?flowList',
           true
         );
         //open a timed popup to send the user to the right location
@@ -205,6 +205,28 @@ WA.onInit()
     WA.room.area.onLeave('FlowsMenu').subscribe(async () => {
       //wrongAreaPopup.close();
       webSite.close();
+    });
+    let triggerMessage: ActionMessage;
+    WA.room.area.onEnter('instructions').subscribe(()=>{
+      try{
+        triggerMessage = WA.ui.displayActionMessage({
+          message: "press 'space' or click here to open the instructionWebPage",
+          callback: async () => {;
+            webSite = await WA.nav.openCoWebSite(//@ts-ignore
+              import.meta.env.VITE_WEBAPP_URL+'/?flowList='+flowId,
+              true
+            );
+          }
+      });
+
+      }catch(error){
+        console.log(error);
+      }
+    });
+
+    WA.room.area.onLeave('instructions').subscribe(async () => {
+      webSite.close();
+      triggerMessage.remove();
     });
 
     WA.room.area.onEnter('ActivityType1').subscribe(async () => {
