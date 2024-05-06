@@ -3,7 +3,11 @@
 import { bootstrapExtra } from '@workadventure/scripting-api-extra';
 import { AxiosResponse } from 'axios';
 import { API, PolyglotNodeValidation } from './data/api';
-import { ActionMessage, CoWebsite, Popup } from '@workadventure/iframe-api-typings';
+import {
+  ActionMessage,
+  CoWebsite,
+  Popup,
+} from '@workadventure/iframe-api-typings';
 
 console.log('Script started successfully');
 
@@ -42,6 +46,7 @@ function wrongAreaFunction(where: string, activity: string) {
     closePopup();
   }, 3000);
 }
+
 async function nextActivityBannerV2(areaPopup: string) {
   await getActualActivity();
   closePopup();
@@ -100,32 +105,18 @@ async function startActivity(flowId: string): Promise<any> {
   }
 }
 
-window.addEventListener('message', async function (event) {
-  if (event.data.flowId) console.log('first way ' + event.data.flowId); // Message received from child
-  await startActivity(event.data.flowId);
-});
-
-window.document.addEventListener('myCustomEvent', handleEvent, false);
-function handleEvent(e: any) {
-  console.log('second way ' + e.detail); // outputs: {foo: 'bar'}
-}
-
 // Waiting for the API to be ready
 WA.onInit()
   .then(async () => {
     console.log('Scripting API ready');
     WA.player.state.flows = { flowId: 'ctxId' };
-
-    // /// SE DECOMMENTO QUESTA RIGA NON MI FUNZIONA IL RESTO...FORSE
-    // DOBBIAMO METTERE UN CHECK CHE SE HA SELEZIONATO IL FLOW ALLORA POSSIAMO ESEGUIRLO e quind entrare.
-    // await startActivity(flowId);
+    await startActivity(flowId);
     // Flows Menu
 
     WA.room.area.onEnter('Entry').subscribe(async () => {
       try {
-        const playerFlows = WA.player.state.flows;
-
-        if (playerFlows) {
+        console.log(WA.player.state.actualFlow);
+        if (!WA.player.state.actualFlow) {
           const instructionPopup = WA.ui.openPopup(
             'instructions',
             'You have not selected a Learning Path, please go to the menu area to choose a path.',
@@ -193,8 +184,9 @@ WA.onInit()
           menuPopup.close();
         }, 3000);
 
-        webSite = await WA.nav.openCoWebSite(//@ts-ignore
-          import.meta.env.VITE_WEBAPP_URL+'/?flowList',
+        webSite = await WA.nav.openCoWebSite(
+          //@ts-ignore
+          'http://localhost:3000/?flowList',
           true
         );
         //open a timed popup to send the user to the right location
@@ -207,19 +199,19 @@ WA.onInit()
       webSite.close();
     });
     let triggerMessage: ActionMessage;
-    WA.room.area.onEnter('instructions').subscribe(()=>{
-      try{
+    WA.room.area.onEnter('instructions').subscribe(() => {
+      try {
         triggerMessage = WA.ui.displayActionMessage({
           message: "press 'space' or click here to open the instructionWebPage",
-          callback: async () => {;
-            webSite = await WA.nav.openCoWebSite(//@ts-ignore
-              import.meta.env.VITE_WEBAPP_URL+'/?flowList='+flowId,
+          callback: async () => {
+            webSite = await WA.nav.openCoWebSite(
+              //@ts-ignore
+              'http://localhost:3000/?flowList=' + WA.player.state.actualFlow,
               true
             );
-          }
-      });
-
-      }catch(error){
+          },
+        });
+      } catch (error) {
         console.log(error);
       }
     });
