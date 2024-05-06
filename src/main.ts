@@ -134,8 +134,10 @@ WA.onInit()
           setTimeout(function () {
             instructionPopup.close();
           }, 3000);
+          return;
         }
-
+        //@ts-ignore
+        await startActivity(WA.player.state.actualFlow);
         await getActualActivity();
         const instructionPopup = WA.ui.openPopup(
           'instructions',
