@@ -18,6 +18,7 @@ let menuPopup: Popup;
 const flowId = 'acd235b9-7504-4975-a0c7-96914480d498';
 let webSite: CoWebsite;
 let wrongPopup: any = undefined;
+let instructionPopup: any= undefined;
 
 function closePopup() {
   if (wrongPopup !== undefined) {
@@ -25,6 +26,14 @@ function closePopup() {
     wrongPopup = undefined;
   }
 }
+
+function closeInstruction() {
+  if (instructionPopup !== undefined) {
+    instructionPopup.close();
+    instructionPopup = undefined;
+  }
+}
+
 
 function wrongAreaFunction(where: string, activity: string) {
   closePopup();
@@ -117,7 +126,7 @@ WA.onInit()
       try {
         console.log(WA.player.state.actualFlow);
         if (!WA.player.state.actualFlow) {
-          const instructionPopup = WA.ui.openPopup(
+          instructionPopup = WA.ui.openPopup(
             'instructions',
             'You have not selected a Learning Path, please go to the menu area to choose a path.',
             [
@@ -132,14 +141,14 @@ WA.onInit()
             ]
           );
           setTimeout(function () {
-            instructionPopup.close();
+            closeInstruction();
           }, 3000);
           return;
         }
         //@ts-ignore
         await startActivity(WA.player.state.actualFlow);
         await getActualActivity();
-        const instructionPopup = WA.ui.openPopup(
+        instructionPopup = WA.ui.openPopup(
           'instructions',
           'Your next activity is in "' +
             actualActivity.platform +
@@ -156,7 +165,7 @@ WA.onInit()
           ]
         );
         setTimeout(function () {
-          instructionPopup.close();
+          closeInstruction();
         }, 3000);
         //open a timed popup to send the user to the right location
       } catch (error) {
@@ -183,13 +192,15 @@ WA.onInit()
           ]
         );
         setTimeout(function () {
-          menuPopup.close();
+          if(menuPopup.close)menuPopup.close();
         }, 3000);
 
         webSite = await WA.nav.openCoWebSite(
           //@ts-ignore
           'http://localhost:3000/?flowList',
-          true
+          true,
+          undefined,
+          55
         );
         //open a timed popup to send the user to the right location
       } catch (error) {
@@ -200,16 +211,46 @@ WA.onInit()
       //wrongAreaPopup.close();
       webSite.close();
     });
+
     let triggerMessage: ActionMessage;
     WA.room.area.onEnter('instructions').subscribe(() => {
       try {
+        if (!WA.player.state.actualFlow) {
+          triggerMessage = WA.ui.displayActionMessage({
+            message:
+              "press 'space' or click here to open the instruction WebPage",
+            callback: async () => {
+              instructionPopup = WA.ui.openPopup(
+                'instructions',
+                'You have not selected a Learning Path, please go to the menu area to choose a path.',
+                [
+                  {
+                    label: 'Close',
+                    className: 'normal',
+                    callback: () => {
+                      // Close the popup when the "Close" button is pressed.
+                      closeInstruction();
+                    },
+                  },
+                ]
+              );
+              setTimeout(function () {
+                closeInstruction();
+              }, 3000);
+            },
+          });
+
+          return;
+        }
         triggerMessage = WA.ui.displayActionMessage({
-          message: "press 'space' or click here to open the instructionWebPage",
+          message: "press 'space' or click here to open the instruction WebPage",
           callback: async () => {
             webSite = await WA.nav.openCoWebSite(
               //@ts-ignore
               'http://localhost:3000/?flowList=' + WA.player.state.actualFlow,
-              true
+              true,
+              undefined,
+              55
             );
           },
         });
@@ -219,8 +260,8 @@ WA.onInit()
     });
 
     WA.room.area.onLeave('instructions').subscribe(async () => {
-      webSite.close();
       triggerMessage.remove();
+      webSite.close();
     });
 
     WA.room.area.onEnter('ActivityType1').subscribe(async () => {
@@ -228,24 +269,17 @@ WA.onInit()
         console.log('testing ACTIVITYTYPE1');
         if (actualActivity.platform != 'WebApp') {
           console.log('wrong spot, go to another area');
-          WA.ui.banner.openBanner({
-            id: 'ReadMaterialBanner',
-            text: 'Wrong area, here you are able to make activity connected to the WebApp',
-            bgColor: '#000000',
-            textColor: '#ffffff',
-            closable: true,
-            timeToClose: 6000,
-          });
+          wrongAreaFunction('BannerA1', 'WebApp');
           return;
         }
         const URL =
           //@ts-ignore
-          import.meta.env.VITE_WEBAPP_URL +
-          '/?&ctx=' +
+          'http://localhost:3000/?&ctx=' +
           ctx +
           '&rememberTipologyQuiz=' +
           actualActivity.type;
-        webSite = await WA.nav.openCoWebSite(URL);
+        webSite = await WA.nav.openCoWebSite(URL, true, );
+        console.log(URL);
         //open a timed popup to send the user to the right location
       } catch (error) {
         // Handle errors if the API call fails
@@ -278,7 +312,7 @@ WA.onInit()
       // If you need to send data from the first call
       try {
         console.log('area Activity3');
-        // You can use activity2Response in subsequent parts of your code
+        
         /*if (actualActivity.platform != 'MiroBoard') {
           console.log('wrong spot, go to another area');
           wrongAreaFunction('BannerA3', 'MiroBoard');
