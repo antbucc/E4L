@@ -388,12 +388,12 @@ WA.onInit()
             },
           ]
         );
-        webSite = await WA.nav.openCoWebSite(
+        /*webSite = await WA.nav.openCoWebSite(
           'https://vscode.dev',
           true,
           undefined,
           55
-        );
+        );*/
       } catch (error) {
         // Handle errors if the API call fails
         console.error('Failed to get API response:', error);
