@@ -299,8 +299,8 @@ WA.onInit()
         }
         const URL =
           //@ts-ignore
-          //import.meta.env.VITE_WEBAPP_URL +
-          'http://localhost:3000/?&ctx=' +
+          import.meta.env.VITE_WEBAPP_URL +
+          '/?&ctx=' +
           ctx +
           '&rememberTipologyQuiz=' +
           actualActivity.type;
@@ -387,6 +387,12 @@ WA.onInit()
               },
             },
           ]
+        );
+        webSite = await WA.nav.openCoWebSite(
+          'https://vscode.dev',
+          true,
+          undefined,
+          55
         );
       } catch (error) {
         // Handle errors if the API call fails
