@@ -16,11 +16,18 @@ let ctx: string; //to be remove after becoming obsolete, global ctx to keep trac
 let actualActivity: PolyglotNodeValidation;
 let menuPopup: any;
 const flowId = 'acd235b9-7504-4975-a0c7-96914480d498';
-let webSite: CoWebsite;
+let webSite: any = undefined;
 let wrongPopup: any = undefined;
 let instructionPopup: any = undefined;
 
-function closeMenuPopup(){
+function closeWebsite() {
+  if (webSite !== undefined) {
+    webSite.close();
+    webSite = undefined;
+  }
+}
+
+function closeMenuPopup() {
   if (menuPopup !== undefined) {
     menuPopup.close();
     menuPopup = undefined;
@@ -215,7 +222,7 @@ WA.onInit()
     });
     WA.room.area.onLeave('FlowsMenu').subscribe(async () => {
       //wrongAreaPopup.close();
-      webSite.close();
+      closeWebsite();
     });
 
     let triggerMessage: ActionMessage;
@@ -270,7 +277,16 @@ WA.onInit()
 
     WA.room.area.onLeave('instructions').subscribe(async () => {
       triggerMessage.remove();
-      webSite.close();
+      closeWebsite();
+    });
+
+    WA.player.state.onVariableChange('platform').subscribe((value) => {
+      if (value != 'WebApp') {
+        closeWebsite();
+        console.log('website closed');
+        nextActivityBannerV2('BannerA1');
+      }
+      return;
     });
 
     WA.room.area.onEnter('ActivityType1').subscribe(async () => {
@@ -283,8 +299,8 @@ WA.onInit()
         }
         const URL =
           //@ts-ignore
-          import.meta.env.VITE_WEBAPP_URL +
-          '/?&ctx=' +
+          //import.meta.env.VITE_WEBAPP_URL +
+          'http://localhost:3000/?&ctx=' +
           ctx +
           '&rememberTipologyQuiz=' +
           actualActivity.type;
@@ -296,7 +312,7 @@ WA.onInit()
       }
     });
     WA.room.area.onLeave('ActivityType1').subscribe(async () => {
-      webSite.close();
+      closeWebsite();
       nextActivityBannerV2('BannerA1');
     });
 
@@ -342,7 +358,7 @@ WA.onInit()
     WA.room.area.onLeave('ActivityType3').subscribe(async () => {
       //wrongAreaPopup.close();
       nextActivityBannerV2('BannerA3');
-      webSite.close();
+      closeWebsite();
     });
 
     // ACTIVITY TYPE 4
