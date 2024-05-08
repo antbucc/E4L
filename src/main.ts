@@ -18,7 +18,7 @@ let menuPopup: Popup;
 const flowId = 'acd235b9-7504-4975-a0c7-96914480d498';
 let webSite: CoWebsite;
 let wrongPopup: any = undefined;
-let instructionPopup: any= undefined;
+let instructionPopup: any = undefined;
 
 function closePopup() {
   if (wrongPopup !== undefined) {
@@ -33,7 +33,6 @@ function closeInstruction() {
     instructionPopup = undefined;
   }
 }
-
 
 function wrongAreaFunction(where: string, activity: string) {
   closePopup();
@@ -192,12 +191,12 @@ WA.onInit()
           ]
         );
         setTimeout(function () {
-          if(menuPopup.close)menuPopup.close();
+          if (menuPopup.close) menuPopup.close();
         }, 3000);
 
         webSite = await WA.nav.openCoWebSite(
           //@ts-ignore
-          'http://localhost:3000/?flowList',
+          import.meta.env.VITE_WEBAPP_URL + '/?flowList',
           true,
           undefined,
           55
@@ -243,11 +242,14 @@ WA.onInit()
           return;
         }
         triggerMessage = WA.ui.displayActionMessage({
-          message: "press 'space' or click here to open the instruction WebPage",
+          message:
+            "press 'space' or click here to open the instruction WebPage",
           callback: async () => {
             webSite = await WA.nav.openCoWebSite(
               //@ts-ignore
-              'http://localhost:3000/?flowList=' + WA.player.state.actualFlow,
+              import.meta.env.VITE_WEBAPP_URL +
+                '/?flowList=' +
+                WA.player.state.actualFlow,
               true,
               undefined,
               55
@@ -274,11 +276,12 @@ WA.onInit()
         }
         const URL =
           //@ts-ignore
-          'http://localhost:3000/?&ctx=' +
+          import.meta.env.VITE_WEBAPP_URL +
+          '/?&ctx=' +
           ctx +
           '&rememberTipologyQuiz=' +
           actualActivity.type;
-        webSite = await WA.nav.openCoWebSite(URL, true, );
+        webSite = await WA.nav.openCoWebSite(URL, true);
         console.log(URL);
         //open a timed popup to send the user to the right location
       } catch (error) {
@@ -312,7 +315,7 @@ WA.onInit()
       // If you need to send data from the first call
       try {
         console.log('area Activity3');
-        
+
         /*if (actualActivity.platform != 'MiroBoard') {
           console.log('wrong spot, go to another area');
           wrongAreaFunction('BannerA3', 'MiroBoard');
