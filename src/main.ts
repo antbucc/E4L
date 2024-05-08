@@ -14,11 +14,18 @@ console.log('Script started successfully');
 let ctx: string; //to be remove after becoming obsolete, global ctx to keep tracks of this execution
 //let flow: string;
 let actualActivity: PolyglotNodeValidation;
-let menuPopup: Popup;
+let menuPopup: any;
 const flowId = 'acd235b9-7504-4975-a0c7-96914480d498';
 let webSite: CoWebsite;
 let wrongPopup: any = undefined;
 let instructionPopup: any = undefined;
+
+function closeMenuPopup(){
+  if (menuPopup !== undefined) {
+    menuPopup.close();
+    menuPopup = undefined;
+  }
+}
 
 function closePopup() {
   if (wrongPopup !== undefined) {
@@ -132,9 +139,9 @@ WA.onInit()
               {
                 label: 'Close',
                 className: 'normal',
-                callback: (popup) => {
+                callback: () => {
                   // Close the popup when the "Close" button is pressed.
-                  popup.close();
+                  closeInstruction();
                 },
               },
             ]
@@ -156,9 +163,9 @@ WA.onInit()
             {
               label: 'Close',
               className: 'normal',
-              callback: (popup) => {
+              callback: () => {
                 // Close the popup when the "Close" button is pressed.
-                popup.close();
+                closeInstruction();
               },
             },
           ]
@@ -183,15 +190,15 @@ WA.onInit()
             {
               label: 'Close',
               className: 'normal',
-              callback: (popup) => {
+              callback: () => {
                 // Close the popup when the "Close" button is pressed.
-                popup.close();
+                closeMenuPopup();
               },
             },
           ]
         );
         setTimeout(function () {
-          if (menuPopup.close) menuPopup.close();
+          closeMenuPopup();
         }, 3000);
 
         webSite = await WA.nav.openCoWebSite(
