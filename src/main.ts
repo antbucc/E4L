@@ -8,8 +8,16 @@ import {
   CoWebsite,
   Popup,
 } from '@workadventure/iframe-api-typings';
+import { messagesPopup } from './components/userInteraction';
 
 console.log('Script started successfully');
+
+const mappingBanner = {
+  BannerA1: { x: '16px', y: '180px' },
+  BannerA2: { x: '650px', y: '290px' },
+  BannerA3: { x: '650px', y: '130px' },
+  BannerA4: { x: '257px', y: '68px' },
+};
 
 let ctx: string; //to be remove after becoming obsolete, global ctx to keep tracks of this execution
 //let flow: string;
@@ -46,6 +54,15 @@ function closeInstruction() {
     instructionPopup.close();
     instructionPopup = undefined;
   }
+}
+function wrongAreaFunctionV2(where: string, activity: string) {
+  closePopup();
+  const message =
+    'Wrong area, here you are able to make activity connected to ' + activity;
+  messagesPopup(message, mappingBanner.BannerA1); //this is a jsx.element can i open it like a webpage with coweb or ui.webpage?
+  setTimeout(function () {
+    closePopup();
+  }, 3000);
 }
 
 function wrongAreaFunction(where: string, activity: string) {
@@ -388,12 +405,12 @@ WA.onInit()
             },
           ]
         );
-        /*webSite = await WA.nav.openCoWebSite(
-          'https://vscode.dev',
+        webSite = await WA.nav.openCoWebSite(
+          'https://jupyter.org/try-jupyter/notebooks/',
           true,
-          undefined,
+          'true',
           55
-        );*/
+        );
       } catch (error) {
         // Handle errors if the API call fails
         console.error('Failed to get API response:', error);

@@ -48,7 +48,7 @@ const FlowCard = ({ flow, px, py }: FlowCardProps) => {
             maxW={{ base: '100%', sm: '200px' }}
             src={cardImage.src}
             alt="Flow card"
-  />*/}
+          />*/}
           <Stack w="full">
             <CardBody>
               <Heading size="md">{flow.title}</Heading>
