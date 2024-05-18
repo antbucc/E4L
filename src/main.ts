@@ -3,21 +3,17 @@
 import { bootstrapExtra } from '@workadventure/scripting-api-extra';
 import { AxiosResponse } from 'axios';
 import { API, PolyglotNodeValidation } from './data/api';
-import {
-  ActionMessage,
-  CoWebsite,
-  Popup,
-} from '@workadventure/iframe-api-typings';
-import { messagesPopup } from './components/userInteraction';
+import { ActionMessage } from '@workadventure/iframe-api-typings';
+//import { messagesPopup } from './components/userInteraction';
 
 console.log('Script started successfully');
-
+/*
 const mappingBanner = {
   BannerA1: { x: '16px', y: '180px' },
   BannerA2: { x: '650px', y: '290px' },
   BannerA3: { x: '650px', y: '130px' },
   BannerA4: { x: '257px', y: '68px' },
-};
+};*/
 
 let ctx: string; //to be remove after becoming obsolete, global ctx to keep tracks of this execution
 //let flow: string;
@@ -55,6 +51,7 @@ function closeInstruction() {
     instructionPopup = undefined;
   }
 }
+/*
 function wrongAreaFunctionV2(where: string, activity: string) {
   closePopup();
   const message =
@@ -63,7 +60,7 @@ function wrongAreaFunctionV2(where: string, activity: string) {
   setTimeout(function () {
     closePopup();
   }, 3000);
-}
+}*/
 
 function wrongAreaFunction(where: string, activity: string) {
   closePopup();
@@ -393,8 +390,19 @@ WA.onInit()
             import.meta.env.VITE_BACK_URL +
             '/api/flows/' +
             ctx +
-            '/run ).\nExecute the notebook in VSCode to complete the exercise',
+            '/run ).\nExecute the notebook in VSCode to complete the exercise',            
           [
+            {
+              label: 'Open Notebook',
+              className: 'normal',
+              callback: () => {
+                // Close the popup when the "Close" button is pressed.                                
+                
+              window.open(//@ts-ignore
+                'vscode://ms-dotnettools.dotnet-interactive-vscode/openNotebook?url=http://localhost:5000/api/flows/'+ctx+'/run/notebook.dib', "_blank");
+                console.log("aa");
+              },
+            },
             {
               label: 'Close',
               className: 'normal',
@@ -405,12 +413,18 @@ WA.onInit()
             },
           ]
         );
-        webSite = await WA.nav.openCoWebSite(
-          'https://jupyter.org/try-jupyter/notebooks/',
-          true,
-          'true',
-          55
-        );
+        
+        triggerMessage = WA.ui.displayActionMessage({
+          message:
+            "press 'space' or click here to open the instruction WebPage",
+          callback: async () => {
+            window.open(
+              //@ts-ignore
+              'vscode://ms-dotnettools.dotnet-interactive-vscode/openNotebook?url='+import.meta.env.VITE_BACK_URL+'/api/flows/'+ctx+'/run/notebook.dib',
+              '_blank'
+            );
+          },
+        });
       } catch (error) {
         // Handle errors if the API call fails
         console.error('Failed to get API response:', error);
