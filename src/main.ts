@@ -397,9 +397,8 @@ WA.onInit()
               className: 'normal',
               callback: () => {
                 // Close the popup when the "Close" button is pressed.                                
-                
-              window.open(//@ts-ignore
-                'vscode://ms-dotnettools.dotnet-interactive-vscode/openNotebook?url=http://localhost:5000/api/flows/'+ctx+'/run/notebook.dib', "_blank");
+              WA.nav.openTab(//@ts-ignore
+                'vscode://ms-dotnettools.dotnet-interactive-vscode/openNotebook?url='+import.meta.env.VITE_BACK_URL+'/api/flows/'+ctx+'/run/notebook.dib');
                 console.log("aa");
               },
             },
