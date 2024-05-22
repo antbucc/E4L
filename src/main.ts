@@ -294,6 +294,31 @@ WA.onInit()
       closeWebsite();
     });
 
+    WA.player.state.onVariableChange('actualFlow').subscribe(() => {
+      closeWebsite();
+      closeMenuPopup();
+      menuPopup = WA.ui.openPopup(
+        'MenuBanner',
+        'Learning path chose correctly, enter the school zone to start ',
+        [
+          {
+            label: 'Close',
+            className: 'normal',
+            callback: () => {
+              // Close the popup when the "Close" button is pressed.
+              closeMenuPopup();
+            },
+          },
+        ]
+      );
+      setTimeout(function () {
+        closeMenuPopup();
+      }, 3000);
+
+      console.log('website closed');
+      return;
+    });
+
     WA.player.state.onVariableChange('platform').subscribe((value) => {
       if (value != 'WebApp') {
         closeWebsite();
@@ -353,7 +378,8 @@ WA.onInit()
       try {
         console.log('area Activity3');
 
-        /*if (actualActivity.platform != 'MiroBoard') {
+        /*if (actualActivity.platform != '
+        Board') {
           console.log('wrong spot, go to another area');
           wrongAreaFunction('BannerA3', 'MiroBoard');
           return;
@@ -390,16 +416,21 @@ WA.onInit()
             import.meta.env.VITE_BACK_URL +
             '/api/flows/' +
             ctx +
-            '/run ).\nExecute the notebook in VSCode to complete the exercise',            
+            '/run ).\nExecute the notebook in VSCode to complete the exercise',
           [
             {
               label: 'Open Notebook',
               className: 'normal',
               callback: () => {
-                // Close the popup when the "Close" button is pressed.                                
-              WA.nav.openTab(//@ts-ignore
-                'vscode://ms-dotnettools.dotnet-interactive-vscode/openNotebook?url='+import.meta.env.VITE_BACK_URL+'/api/flows/'+ctx+'/run/notebook.dib');
-                console.log("aa");
+                // Close the popup when the "Close" button is pressed.
+                WA.nav.openTab(
+                  'vscode://ms-dotnettools.dotnet-interactive-vscode/openNotebook?url=' + //@ts-ignore
+                    import.meta.env.VITE_BACK_URL +
+                    '/api/flows/' +
+                    ctx +
+                    '/run/notebook.dib'
+                );
+                console.log('aa');
               },
             },
             {
@@ -412,14 +443,17 @@ WA.onInit()
             },
           ]
         );
-        
+
         triggerMessage = WA.ui.displayActionMessage({
           message:
             "press 'space' or click here to open the instruction WebPage",
           callback: async () => {
             window.open(
-              //@ts-ignore
-              'vscode://ms-dotnettools.dotnet-interactive-vscode/openNotebook?url='+import.meta.env.VITE_BACK_URL+'/api/flows/'+ctx+'/run/notebook.dib',
+              'vscode://ms-dotnettools.dotnet-interactive-vscode/openNotebook?url=' + //@ts-ignore
+                import.meta.env.VITE_BACK_URL +
+                '/api/flows/' +
+                ctx +
+                '/run/notebook.dib',
               '_blank'
             );
           },
@@ -433,7 +467,40 @@ WA.onInit()
     WA.room.area.onLeave('ActivityType4').subscribe(async () => {
       nextActivityBannerV2('BannerA4');
     });
+    // ACTIVITY TYPE 3
+    WA.room.area.onEnter('ActivityType5').subscribe(async () => {
+      // If you need to send data from the first call
+      try {
+        console.log('area Activity5');
 
+        wrongPopup = WA.ui.openPopup(
+          'BannerA5',
+          "This area is unde development, here you'll be able to train your self in a custom activity",
+          [
+            {
+              label: 'Close',
+              className: 'normal',
+              callback: () => {
+                // Close the popup when the "Close" button is pressed.
+                closePopup();
+              },
+            },
+          ]
+        );
+        setTimeout(function () {
+          closePopup();
+        }, 3000);
+      } catch (error) {
+        // Handle errors if the API call fails
+        console.error('Failed to get API response:', error);
+      }
+    });
+
+    WA.room.area.onLeave('ActivityType5').subscribe(async () => {
+      //wrongAreaPopup.close();
+      nextActivityBannerV2('BannerA5');
+      closeWebsite();
+    });
     // The line below bootstraps the Scripting API Extra library that adds a number of advanced properties/features to WorkAdventure
     bootstrapExtra()
       .then(() => {
