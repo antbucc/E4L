@@ -475,7 +475,7 @@ WA.onInit()
 
         wrongPopup = WA.ui.openPopup(
           'BannerA5',
-          "This area is unde development, here you'll be able to train your self in a custom activity",
+          "This area is under development, here you'll be able to train your self in a custom activity",
           [
             {
               label: 'Close',
