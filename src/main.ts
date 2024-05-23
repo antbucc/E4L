@@ -386,7 +386,7 @@ WA.onInit()
         }*/
 
         webSite = await WA.nav.openCoWebSite(
-          'https://miro.com/app/board/uXjVKM6hUiY=/?share_link_id=721292236858',
+          'https://app.eraser.io/workspace/JVoolrO5JJucnQkr1tK7?origin=share',
           true
         );
       } catch (error) {
