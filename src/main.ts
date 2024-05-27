@@ -125,7 +125,8 @@ async function getActualActivity() {
 
 async function startActivity(flowId: string): Promise<any> {
   try {
-    const response: AxiosResponse = await API.getFirstNode({ flowId });
+    const username=WA.player.name;
+    const response: AxiosResponse = await API.getFirstNode({ flowId, username });
     // Handle error responses
     if (response.status != 200) {
       console.error('Error:', response.status, response.statusText);

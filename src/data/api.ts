@@ -11,8 +11,9 @@ export type NextBody = {
 };
 
 //the next 3 type are temporary, the next implementation will not use "ctxId", the APIs will use only the userId and the flowId
-export type FlowBody = {
+export type FirstBody = {
   flowId: string;
+  username?: string;
 };
 export type CtxBody = { ctxId: string };
 export type NextCtxBody = { ctxId: string; satisfiedConditions: string[] };
@@ -56,7 +57,7 @@ export const API = {
     return execution.post<{}, AxiosResponse, {}>(`/api/execution/actual`, body);
   },
   //The next API won't be necessary after the implementation of userId-flowId body
-  getFirstNode: (body: FlowBody): Promise<AxiosResponse> => {
+  getFirstNode: (body: FirstBody): Promise<AxiosResponse> => {
     return execution.post<{}, AxiosResponse, {}>(`/api/execution/first`, body);
   },
   getNextNode: (body: NextCtxBody /*NextBody*/): Promise<AxiosResponse> => {
