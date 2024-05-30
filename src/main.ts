@@ -19,7 +19,6 @@ let ctx: string; //to be remove after becoming obsolete, global ctx to keep trac
 //let flow: string;
 let actualActivity: PolyglotNodeValidation;
 let menuPopup: any;
-const flowId = 'acd235b9-7504-4975-a0c7-96914480d498';
 let webSite: any = undefined;
 let wrongPopup: any = undefined;
 let instructionPopup: any = undefined;
@@ -134,6 +133,7 @@ async function startActivity(flowId: string): Promise<any> {
     }
     ctx = response.data.ctx;
 
+    WA.player.state.flows = [WA.player.state.flows,{ flowId: flowId, ctx: ctx }];
     return;
   } catch (error) {
     // Handle network errors or other exceptions
@@ -146,8 +146,6 @@ async function startActivity(flowId: string): Promise<any> {
 WA.onInit()
   .then(async () => {
     console.log('Scripting API ready');
-    WA.player.state.flows = { flowId: 'ctxId' };
-    await startActivity(flowId);
     // Flows Menu
 
     WA.room.area.onEnter('Entry').subscribe(async () => {
@@ -236,6 +234,44 @@ WA.onInit()
       }
     });
     WA.room.area.onLeave('FlowsMenu').subscribe(async () => {
+      //wrongAreaPopup.close();
+      closeWebsite();
+    });
+
+    WA.room.area.onEnter('activityManager').subscribe(async () => {
+      try {
+        console.log('testing FlowsMenu');
+        menuPopup = WA.ui.openPopup(
+          'MenuBanner',
+          'Here you can choose which learning path you want to do, access the console to see the possibilities',
+          [
+            {
+              label: 'Close',
+              className: 'normal',
+              callback: () => {
+                // Close the popup when the "Close" button is pressed.
+                closeMenuPopup();
+              },
+            },
+          ]
+        );
+        setTimeout(function () {
+          closeMenuPopup();
+        }, 3000);
+
+        webSite = await WA.nav.openCoWebSite(
+          //@ts-ignore
+          import.meta.env.VITE_FRONTEND_URL + '/waEducator',
+          true,
+          undefined,
+          55
+        );
+        //open a timed popup to send the user to the right location
+      } catch (error) {
+        // Handle errors if the API call fails
+      }
+    });
+    WA.room.area.onLeave('activityManager').subscribe(async () => {
       //wrongAreaPopup.close();
       closeWebsite();
     });
