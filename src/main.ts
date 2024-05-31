@@ -7,13 +7,6 @@ import { ActionMessage } from '@workadventure/iframe-api-typings';
 //import { messagesPopup } from './components/userInteraction';
 
 console.log('Script started successfully');
-/*
-const mappingBanner = {
-  BannerA1: { x: '16px', y: '180px' },
-  BannerA2: { x: '650px', y: '290px' },
-  BannerA3: { x: '650px', y: '130px' },
-  BannerA4: { x: '257px', y: '68px' },
-};*/
 
 let ctx: string; //to be remove after becoming obsolete, global ctx to keep tracks of this execution
 //let flow: string;
@@ -50,16 +43,6 @@ function closeInstruction() {
     instructionPopup = undefined;
   }
 }
-/*
-function wrongAreaFunctionV2(where: string, activity: string) {
-  closePopup();
-  const message =
-    'Wrong area, here you are able to make activity connected to ' + activity;
-  messagesPopup(message, mappingBanner.BannerA1); //this is a jsx.element can i open it like a webpage with coweb or ui.webpage?
-  setTimeout(function () {
-    closePopup();
-  }, 3000);
-}*/
 
 function wrongAreaFunction(where: string, activity: string) {
   closePopup();
@@ -81,6 +64,13 @@ function wrongAreaFunction(where: string, activity: string) {
     closePopup();
   }, 3000);
 }
+
+const mappingActivityBanner = {
+  BannerA1: {position:{ x: '16px', y: '180px' }, logo: { x: '16px', y: '180px' }},
+  BannerA2: {position:{ x: '650px', y: '290px' }, logo: { x: '16px', y: '180px' }},
+  BannerA3: {position:{ x: '650px', y: '130px' }, logo: { x: '16px', y: '180px' }},
+  BannerA4: {position:{ x: '257px', y: '68px' }, logo: { x: '16px', y: '180px' }},
+};
 
 async function nextActivityBannerV2(areaPopup: string) {
   await getActualActivity();
@@ -151,6 +141,7 @@ WA.onInit()
     WA.room.area.onEnter('Entry').subscribe(async () => {
       try {
         console.log(WA.player.state.actualFlow);
+          closeInstruction();
         if (!WA.player.state.actualFlow) {
           instructionPopup = WA.ui.openPopup(
             'instructions',
@@ -172,27 +163,11 @@ WA.onInit()
           return;
         }
         //@ts-ignore
-        await startActivity(WA.player.state.actualFlow);
+        //if(WA.player.state.ctx) 
+        await startActivity(String(WA.player.state.actualFlow));
         await getActualActivity();
-        instructionPopup = WA.ui.openPopup(
-          'instructions',
-          'Your next activity is in "' +
-            actualActivity.platform +
-            '", go to the correct area.',
-          [
-            {
-              label: 'Close',
-              className: 'normal',
-              callback: () => {
-                // Close the popup when the "Close" button is pressed.
-                closeInstruction();
-              },
-            },
-          ]
-        );
-        setTimeout(function () {
-          closeInstruction();
-        }, 3000);
+        
+        nextActivityBannerV2('instructions');
         //open a timed popup to send the user to the right location
       } catch (error) {
         // Handle errors if the API call fails
@@ -273,6 +248,51 @@ WA.onInit()
     });
     WA.room.area.onLeave('activityManager').subscribe(async () => {
       //wrongAreaPopup.close();
+      closeWebsite();
+    });
+
+    
+    // ACTIVITY TYPE 3
+    WA.room.area.onEnter('creativeArea').subscribe(async () => {
+      // If you need to send data from the first call
+      try {
+        console.log('area Activity5');
+
+        wrongPopup = WA.ui.openPopup(
+          'BannerA5',
+          "This area is creative area, here you can access the Learning Path editor to create your personal path",
+          [
+            {
+              label: 'Close',
+              className: 'normal',
+              callback: () => {
+                // Close the popup when the "Close" button is pressed.
+                closePopup();
+              },
+            },
+          ]
+        );
+        setTimeout(function () {
+          closePopup();
+        }, 3000);
+
+        webSite = await WA.nav.openCoWebSite(
+          //@ts-ignore
+          import.meta.env.VITE_FRONTEND_URL + '/flows',
+          true,
+          undefined,
+          55
+        );
+
+      } catch (error) {
+        // Handle errors if the API call fails
+        console.error('Failed to get API response:', error);
+      }
+    });
+
+    WA.room.area.onLeave('creativeArea').subscribe(async () => {
+      //wrongAreaPopup.close();
+      nextActivityBannerV2('BannerA5');
       closeWebsite();
     });
 
@@ -387,6 +407,7 @@ WA.onInit()
         // Handle errors if the API call fails
       }
     });
+    
     WA.room.area.onLeave('ActivityType1').subscribe(async () => {
       closeWebsite();
       nextActivityBannerV2('BannerA1');
@@ -504,40 +525,7 @@ WA.onInit()
     WA.room.area.onLeave('ActivityType4').subscribe(async () => {
       nextActivityBannerV2('BannerA4');
     });
-    // ACTIVITY TYPE 3
-    WA.room.area.onEnter('ActivityType5').subscribe(async () => {
-      // If you need to send data from the first call
-      try {
-        console.log('area Activity5');
 
-        wrongPopup = WA.ui.openPopup(
-          'BannerA5',
-          "This area is under development, here you'll be able to train your self in a custom activity",
-          [
-            {
-              label: 'Close',
-              className: 'normal',
-              callback: () => {
-                // Close the popup when the "Close" button is pressed.
-                closePopup();
-              },
-            },
-          ]
-        );
-        setTimeout(function () {
-          closePopup();
-        }, 3000);
-      } catch (error) {
-        // Handle errors if the API call fails
-        console.error('Failed to get API response:', error);
-      }
-    });
-
-    WA.room.area.onLeave('ActivityType5').subscribe(async () => {
-      //wrongAreaPopup.close();
-      nextActivityBannerV2('BannerA5');
-      closeWebsite();
-    });
     // The line below bootstraps the Scripting API Extra library that adds a number of advanced properties/features to WorkAdventure
     bootstrapExtra()
       .then(() => {

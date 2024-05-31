@@ -43,6 +43,7 @@ export default defineConfig({
     rollupOptions: {
       input: {
         index: './index.html',
+        //popup: './src/components/popup.html'
         ...getMapsScripts(maps),
       },
     },
