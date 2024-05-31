@@ -64,13 +64,13 @@ function wrongAreaFunction(where: string, activity: string) {
     closePopup();
   }, 3000);
 }
-
+/*
 const mappingActivityBanner = {
   BannerA1: {position:{ x: '16px', y: '180px' }, logo: { x: '16px', y: '180px' }},
   BannerA2: {position:{ x: '650px', y: '290px' }, logo: { x: '16px', y: '180px' }},
   BannerA3: {position:{ x: '650px', y: '130px' }, logo: { x: '16px', y: '180px' }},
   BannerA4: {position:{ x: '257px', y: '68px' }, logo: { x: '16px', y: '180px' }},
-};
+};*/
 
 async function nextActivityBannerV2(areaPopup: string) {
   await getActualActivity();
