@@ -4,6 +4,7 @@ import { bootstrapExtra } from '@workadventure/scripting-api-extra';
 import { AxiosResponse } from 'axios';
 import { API, PolyglotNodeValidation } from './data/api';
 import { ActionMessage } from '@workadventure/iframe-api-typings';
+//import nextActivityImage from '../public/images/exlamationMark.png';
 //import { messagesPopup } from './components/userInteraction';
 
 console.log('Script started successfully');
