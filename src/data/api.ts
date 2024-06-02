@@ -45,7 +45,8 @@ const execution = axiosCreate.create({
   baseURL: import.meta.env.VITE_BACK_URL,
   headers: {
     'Content-Type': 'application/json',
-    'Access-Control-Allow-Credentials' : true
+    'Access-Control-Allow-Credentials' : true,
+    'Access-Control-Allow-Origin': '*', 
   },
   withCredentials: true,
 });
