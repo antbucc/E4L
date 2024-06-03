@@ -987,6 +987,40 @@
                          "tileid":5
                         }],
                  "id":0
+                }, 
+                {
+                 "animation":[
+                        {
+                         "duration":150,
+                         "tileid":6
+                        }, 
+                        {
+                         "duration":150,
+                         "tileid":7
+                        }, 
+                        {
+                         "duration":150,
+                         "tileid":8
+                        }, 
+                        {
+                         "duration":150,
+                         "tileid":9
+                        }, 
+                        {
+                         "duration":150,
+                         "tileid":10
+                        }, 
+                        {
+                         "duration":150,
+                         "tileid":11
+                        }],
+                 "id":6,
+                 "properties":[
+                        {
+                         "name":"name",
+                         "type":"string",
+                         "value":"arrowBase"
+                        }]
                 }],
          "tilewidth":32
         }],

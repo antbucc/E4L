@@ -95,6 +95,7 @@ async function nextActivityBannerV2(areaPopup: string) {
   setTimeout(function () {
     closePopup();
   }, 3000);
+  WA.room.setTiles([{ x: 12, y: 7, tile: "arrowBase", layer: "activity/Type5" }])
 }
 
 async function getActualActivity() {
@@ -138,7 +139,7 @@ WA.onInit()
   .then(async () => {
     console.log('Scripting API ready');
     // Flows Menu
-
+    
     WA.room.area.onEnter('Entry').subscribe(async () => {
       try {
         console.log(WA.player.state.actualFlow);
