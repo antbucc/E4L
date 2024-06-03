@@ -1,10 +1,11 @@
 /// <reference types="@workadventure/iframe-api-typings" />
 
-import { bootstrapExtra } from '@workadventure/scripting-api-extra';
+import {
+  bootstrapExtra,
+} from '@workadventure/scripting-api-extra';
 import { AxiosResponse } from 'axios';
 import { API, PolyglotNodeValidation } from './data/api';
 import { ActionMessage } from '@workadventure/iframe-api-typings';
-//import nextActivityImage from '../public/images/exlamationMark.png';
 //import { messagesPopup } from './components/userInteraction';
 
 console.log('Script started successfully');
@@ -65,13 +66,21 @@ function wrongAreaFunction(where: string, activity: string) {
     closePopup();
   }, 3000);
 }
-/*
-const mappingActivityBanner = {
-  BannerA1: {position:{ x: '16px', y: '180px' }, logo: { x: '16px', y: '180px' }},
-  BannerA2: {position:{ x: '650px', y: '290px' }, logo: { x: '16px', y: '180px' }},
-  BannerA3: {position:{ x: '650px', y: '130px' }, logo: { x: '16px', y: '180px' }},
-  BannerA4: {position:{ x: '257px', y: '68px' }, logo: { x: '16px', y: '180px' }},
-};*/
+
+const mappingActivity = [
+  {
+    platform: ['VSCode'],
+    activityType: 4,
+  },
+  {
+    platform: ['WebApp'],
+    activityType: 1,
+  },
+  {
+    platform: ['Eraser'],
+    activityType: 3,
+  },
+];
 
 async function nextActivityBannerV2(areaPopup: string) {
   await getActualActivity();
@@ -95,7 +104,39 @@ async function nextActivityBannerV2(areaPopup: string) {
   setTimeout(function () {
     closePopup();
   }, 3000);
-  //WA.room.setTiles([{ x: 12, y: 7, tile: "arrowBase", layer: "activity/Type5" }])
+
+  WA.room.setTiles([
+    {
+      x: 12,
+      y: 6,
+      tile: mappingActivity
+        .find((map) => map.activityType == 4)
+        ?.platform.includes(actualActivity.platform)
+        ? 'arrowBase'
+        : null,
+      layer: 'activity/Type5',
+    },
+    {
+      x: 25,
+      y: 5,
+      tile: mappingActivity
+        .find((map) => map.activityType == 1)
+        ?.platform.includes(actualActivity.platform)
+        ? 'arrowBase'
+        : null,
+      layer: 'activity/Type5',
+    },
+    {
+      x: 17,
+      y: 4,
+      tile: mappingActivity
+        .find((map) => map.activityType == 3)
+        ?.platform.includes(actualActivity.platform)
+        ? 'arrowBase'
+        : null,
+      layer: 'activity/Type5',
+    },
+  ]);
 }
 
 async function getActualActivity() {
@@ -116,8 +157,11 @@ async function getActualActivity() {
 
 async function startActivity(flowId: string): Promise<any> {
   try {
-    const username=WA.player.name;
-    const response: AxiosResponse = await API.getFirstNode({ flowId, username });
+    const username = WA.player.name;
+    const response: AxiosResponse = await API.getFirstNode({
+      flowId,
+      username,
+    });
     // Handle error responses
     if (response.status != 200) {
       console.error('Error:', response.status, response.statusText);
@@ -125,7 +169,10 @@ async function startActivity(flowId: string): Promise<any> {
     }
     ctx = response.data.ctx;
 
-    WA.player.state.flows = [WA.player.state.flows,{ flowId: flowId, ctx: ctx }];
+    WA.player.state.flows = [
+      WA.player.state.flows,
+      { flowId: flowId, ctx: ctx },
+    ];
     return;
   } catch (error) {
     // Handle network errors or other exceptions
@@ -139,11 +186,11 @@ WA.onInit()
   .then(async () => {
     console.log('Scripting API ready');
     // Flows Menu
-    
+
     WA.room.area.onEnter('Entry').subscribe(async () => {
       try {
         console.log(WA.player.state.actualFlow);
-          closeInstruction();
+        closeInstruction();
         if (!WA.player.state.actualFlow) {
           instructionPopup = WA.ui.openPopup(
             'instructions',
@@ -165,10 +212,10 @@ WA.onInit()
           return;
         }
         //@ts-ignore
-        //if(WA.player.state.ctx) 
+        //if(WA.player.state.ctx)
         await startActivity(String(WA.player.state.actualFlow));
         await getActualActivity();
-        
+
         nextActivityBannerV2('instructions');
         //open a timed popup to send the user to the right location
       } catch (error) {
@@ -253,7 +300,6 @@ WA.onInit()
       closeWebsite();
     });
 
-    
     // ACTIVITY TYPE 3
     WA.room.area.onEnter('creativeArea').subscribe(async () => {
       // If you need to send data from the first call
@@ -262,7 +308,7 @@ WA.onInit()
 
         wrongPopup = WA.ui.openPopup(
           'BannerA5',
-          "This area is creative area, here you can access the Learning Path editor to create your personal path",
+          'This area is creative area, here you can access the Learning Path editor to create your personal path',
           [
             {
               label: 'Close',
@@ -285,7 +331,6 @@ WA.onInit()
           undefined,
           55
         );
-
       } catch (error) {
         // Handle errors if the API call fails
         console.error('Failed to get API response:', error);
@@ -409,7 +454,7 @@ WA.onInit()
         // Handle errors if the API call fails
       }
     });
-    
+
     WA.room.area.onLeave('ActivityType1').subscribe(async () => {
       closeWebsite();
       nextActivityBannerV2('BannerA1');
