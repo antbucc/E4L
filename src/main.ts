@@ -1,8 +1,6 @@
 /// <reference types="@workadventure/iframe-api-typings" />
 
-import {
-  bootstrapExtra,
-} from '@workadventure/scripting-api-extra';
+import { bootstrapExtra } from '@workadventure/scripting-api-extra';
 import { AxiosResponse } from 'axios';
 import { API, PolyglotNodeValidation } from './data/api';
 import { ActionMessage } from '@workadventure/iframe-api-typings';
@@ -212,7 +210,26 @@ WA.onInit()
           return;
         }
         //@ts-ignore
-        //if(WA.player.state.ctx)
+
+        const flowsUser = WA.player.state.flows as [
+          { flowId: string; ctx: string },
+        ];
+        console.log(WA.player.state.flows as [{ flowId: string; ctx: string }]);
+        if (flowsUser)
+          if (
+            flowsUser.find(
+              (flow: { flowId: string }) =>
+                flow.flowId == WA.player.state.actualFlow
+            ) != undefined
+          ) {
+            ctx = flowsUser.find(
+              (flow: { flowId: string }) =>
+                flow.flowId == WA.player.state.actualFlow
+            )!.ctx;
+            nextActivityBannerV2('instructions');
+            return;
+          }
+
         await startActivity(String(WA.player.state.actualFlow));
         await getActualActivity();
 
