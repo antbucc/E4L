@@ -167,10 +167,10 @@ async function startActivity(flowId: string): Promise<any> {
     }
     ctx = response.data.ctx;
 
-    WA.player.state.flows = [
-      WA.player.state.flows,
-      { flowId: flowId, ctx: ctx },
-    ];
+    const tempo = (WA.player.state.flows as [any]).concat({ flowId: flowId, ctx: ctx });
+    console.log(tempo);
+    WA.player.state.flows=tempo;
+    
     return;
   } catch (error) {
     // Handle network errors or other exceptions
