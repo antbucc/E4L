@@ -95,7 +95,7 @@ async function nextActivityBannerV2(areaPopup: string) {
   setTimeout(function () {
     closePopup();
   }, 3000);
-  WA.room.setTiles([{ x: 12, y: 7, tile: "arrowBase", layer: "activity/Type5" }])
+  //WA.room.setTiles([{ x: 12, y: 7, tile: "arrowBase", layer: "activity/Type5" }])
 }
 
 async function getActualActivity() {
