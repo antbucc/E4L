@@ -167,7 +167,10 @@ async function startActivity(flowId: string): Promise<any> {
     }
     ctx = response.data.ctx;
 
-    const tempo = (WA.player.state.flows as [any]).concat({ flowId: flowId, ctx: ctx });
+    let tempo = (WA.player.state.flows as [any]);
+    if(tempo)
+    tempo[tempo.length+1]={ flowId: flowId, ctx: ctx };
+  else tempo=[{ flowId: flowId, ctx: ctx }];
     console.log(tempo);
     WA.player.state.flows=tempo;
     
@@ -219,7 +222,7 @@ WA.onInit()
           if (
             flowsUser.find(
               (flow: { flowId: string }) =>
-                flow.flowId == WA.player.state.actualFlow
+                flow?.flowId == WA.player.state.actualFlow
             ) != undefined
           ) {
             ctx = flowsUser.find(
