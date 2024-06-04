@@ -139,14 +139,34 @@ async function nextActivityBannerV2(areaPopup: string) {
 
 async function getActualActivity() {
   try {
+    console.log('getactual');
     if (!ctx) throw 'No ctx detected';
-    const response: AxiosResponse = await API.getActualNode({ ctxId: ctx });
-    if (response.status != 200) {
-      console.error('Error:', response.status, response.statusText);
-      throw new Error(`HTTP error! Status: ${response.status}`);
-    }
-    actualActivity = response.data;
-  } catch (error) {
+    await API.getActualNode({ ctxId: ctx })
+      .then(async (response) => {
+        console.log(response);
+
+        actualActivity = response.data;
+      })
+      .catch(async (error: any) => {
+        console.log(error);
+          console.log('error');
+          if (error.response.status == 400) {
+            //means the educator resetted the player context
+            console.log('ctx reset');
+            await startActivity(String(WA.player.state.actualFlow)).then(
+              async () => {console.log('new activity correctly');await getActualActivity()}
+            );
+            return;
+          }
+          console.error(
+            'Error:',
+            error.response.status,
+            error.response.statusText
+          );
+          throw new Error(`HTTP error! Status: ${error.response.status}`);
+        
+      });
+  } catch (error: any) {
     // Handle network errors or other exceptions
     console.error('Error:', error);
     throw error; // Rethrow the error for the caller to handle
@@ -167,13 +187,15 @@ async function startActivity(flowId: string): Promise<any> {
     }
     ctx = response.data.ctx;
 
-    let tempo = (WA.player.state.flows as [any]);
-    if(tempo)
-    tempo[tempo.length+1]={ flowId: flowId, ctx: ctx };
-  else tempo=[{ flowId: flowId, ctx: ctx }];
-    console.log(tempo);
-    WA.player.state.flows=tempo;
+    let tempo = WA.player.state.flows as [any];
+    if(tempo.find((flow)=>flowId==flow.flowId))
+      tempo.find((flow)=>flowId==flow.flowId).ctx=ctx;
     
+    if (tempo) tempo[tempo.length + 1] = { flowId: flowId, ctx: ctx };
+    else tempo = [{ flowId: flowId, ctx: ctx }];
+    console.log(tempo);
+    WA.player.state.flows = tempo;
+
     return;
   } catch (error) {
     // Handle network errors or other exceptions
