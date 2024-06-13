@@ -139,7 +139,7 @@ async function nextActivityBannerV2(areaPopup: string) {
 
 async function getActualActivity() {
   try {
-    console.log('getactual');
+    console.log('getActual');
     if (!ctx) throw 'No ctx detected';
     await API.getActualNode({ ctxId: ctx })
       .then(async (response) => {
@@ -149,22 +149,24 @@ async function getActualActivity() {
       })
       .catch(async (error: any) => {
         console.log(error);
-          console.log('error');
-          if (error.response.status == 400) {
-            //means the educator resetted the player context
-            console.log('ctx reset');
-            await startActivity(String(WA.player.state.actualFlow)).then(
-              async () => {console.log('new activity correctly');await getActualActivity()}
-            );
-            return;
-          }
-          console.error(
-            'Error:',
-            error.response.status,
-            error.response.statusText
+        console.log('error');
+        if (error.response.status == 400) {
+          //means the educator resetted the player context
+          console.log('ctx reset');
+          await startActivity(String(WA.player.state.actualFlow)).then(
+            async () => {
+              console.log('new activity correctly');
+              await getActualActivity();
+            }
           );
-          throw new Error(`HTTP error! Status: ${error.response.status}`);
-        
+          return;
+        }
+        console.error(
+          'Error:',
+          error.response.status,
+          error.response.statusText
+        );
+        throw new Error(`HTTP error! Status: ${error.response.status}`);
       });
   } catch (error: any) {
     // Handle network errors or other exceptions
@@ -180,6 +182,7 @@ async function startActivity(flowId: string): Promise<any> {
       flowId,
       username,
     });
+    console.log(flowId);
     // Handle error responses
     if (response.status != 200) {
       console.error('Error:', response.status, response.statusText);
@@ -187,15 +190,21 @@ async function startActivity(flowId: string): Promise<any> {
     }
     ctx = response.data.ctx;
 
-    let tempo = WA.player.state.flows as [any];
-    if(tempo.find((flow)=>flowId==flow.flowId))
-      tempo.find((flow)=>flowId==flow.flowId).ctx=ctx;
-    
-    if (tempo) tempo[tempo.length + 1] = { flowId: flowId, ctx: ctx };
-    else tempo = [{ flowId: flowId, ctx: ctx }];
-    console.log(tempo);
-    WA.player.state.flows = tempo;
+    let flowsUser = WA.player.state.flows as [any];
 
+    if (flowsUser != undefined)
+      if (
+        (flowsUser as [{ flowId: string; ctx: string }]).find((flow) => {
+          if (flow != null) return flowId == flow.flowId;
+          return false;
+        })
+      )
+        flowsUser.find((flow) => flowId == flow.flowId).ctx = ctx;
+      else flowsUser[flowsUser.length + 1] = { flowId: flowId, ctx: ctx };
+    else flowsUser = [{ flowId: flowId, ctx: ctx }];
+
+    WA.player.state.flows = flowsUser;
+    console.log('starting activity done');
     return;
   } catch (error) {
     // Handle network errors or other exceptions
@@ -212,7 +221,6 @@ WA.onInit()
 
     WA.room.area.onEnter('Entry').subscribe(async () => {
       try {
-        console.log(WA.player.state.actualFlow);
         closeInstruction();
         if (!WA.player.state.actualFlow) {
           instructionPopup = WA.ui.openPopup(
@@ -236,26 +244,27 @@ WA.onInit()
         }
         //@ts-ignore
 
-        const flowsUser = WA.player.state.flows as [
-          { flowId: string; ctx: string },
-        ];
-        console.log(WA.player.state.flows as [{ flowId: string; ctx: string }]);
-        if (flowsUser)
+        console.log(WA.player.state.actualFlow);
+        const flowsUser = WA.player.state.flows;
+
+        if (flowsUser != undefined)
           if (
-            flowsUser.find(
+            (flowsUser as [{ flowId: string; ctx: string }]).find(
               (flow: { flowId: string }) =>
                 flow?.flowId == WA.player.state.actualFlow
             ) != undefined
           ) {
-            ctx = flowsUser.find(
+            ctx = (flowsUser as [{ flowId: string; ctx: string }]).find(
               (flow: { flowId: string }) =>
-                flow.flowId == WA.player.state.actualFlow
+                flow?.flowId == WA.player.state.actualFlow
             )!.ctx;
+            console.log('ctx already created, continue activity');
             nextActivityBannerV2('instructions');
             return;
           }
-
+        console.log('starting activity');
         await startActivity(String(WA.player.state.actualFlow));
+
         await getActualActivity();
 
         nextActivityBannerV2('instructions');
