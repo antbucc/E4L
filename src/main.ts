@@ -15,6 +15,7 @@ let menuPopup: any;
 let webSite: any = undefined;
 let wrongPopup: any = undefined;
 let instructionPopup: any = undefined;
+let road: { x: number; y: number }[] = [{ x: 0, y: 0 }];
 
 function closeWebsite() {
   if (webSite !== undefined) {
@@ -69,16 +70,30 @@ const mappingActivity = [
   {
     platform: ['VSCode'],
     activityType: 4,
+    pos: {
+      x: 12,
+      y: 6,
+    },
   },
   {
     platform: ['WebApp'],
     activityType: 1,
+    pos: {
+      x: 25,
+      y: 5,
+    },
   },
   {
-    platform: ['Eraser'],
+    platform: ['Eraser', 'Papyrus'],
     activityType: 3,
+    pos: {
+      x: 17,
+      y: 4,
+    },
   },
 ];
+
+let nextPos = { x: 0, y: 0 };
 
 async function nextActivityBannerV2(areaPopup: string) {
   await getActualActivity();
@@ -102,40 +117,146 @@ async function nextActivityBannerV2(areaPopup: string) {
   setTimeout(function () {
     closePopup();
   }, 3000);
+  mappingActivity.map((map) => {
+    if (map.platform.includes(actualActivity.platform))
+      nextPos = { x: map.pos.x, y: map.pos.y + 2 };
+    WA.room.setTiles([
+      {
+        x: map.pos.x,
+        y: map.pos.y,
+        tile: map.platform.includes(actualActivity.platform)
+          ? 'arrowBase'
+          : null,
+        layer: 'activity/Type5',
+      },
+    ]);
+  });
 
-  WA.room.setTiles([
-    {
-      x: 12,
-      y: 6,
-      tile: mappingActivity
-        .find((map) => map.activityType == 4)
-        ?.platform.includes(actualActivity.platform)
-        ? 'arrowBase'
-        : null,
-      layer: 'activity/Type5',
-    },
-    {
-      x: 25,
-      y: 5,
-      tile: mappingActivity
-        .find((map) => map.activityType == 1)
-        ?.platform.includes(actualActivity.platform)
-        ? 'arrowBase'
-        : null,
-      layer: 'activity/Type5',
-    },
-    {
-      x: 17,
-      y: 4,
-      tile: mappingActivity
-        .find((map) => map.activityType == 3)
-        ?.platform.includes(actualActivity.platform)
-        ? 'arrowBase'
-        : null,
-      layer: 'activity/Type5',
-    },
-  ]);
+  let actualPos = await WA.player.getPosition();
+
+  let toCancel;
+  do {
+    toCancel = road.pop();
+    if (toCancel)
+      WA.room.setTiles([
+        {
+          x: toCancel.x,
+          y: toCancel.y,
+          tile: null,
+          layer: 'activity/Type5',
+        },
+      ]);
+  } while (toCancel);
+  actualPos = {
+    x: Math.floor(actualPos.x / 33),
+    y: Math.floor(actualPos.y / 33),
+  };
+  let i = 0; //debugger
+  let again;
+  if (nextPos.x != 0)
+    do {
+      i++;
+      again =
+        Math.abs(actualPos.y - nextPos.y) < 3 &&
+        Math.abs(actualPos.x - nextPos.x) < 3
+          ? false
+          : true;
+
+      if (Math.abs(actualPos.y - nextPos.y) > 1) {
+        const tilePosX = actualPos.x;
+        const tilePosY = actualPos.y + (actualPos.y < nextPos.y ? 2 : -2);
+
+        WA.room.setTiles([
+          {
+            x: tilePosX,
+            y: tilePosY,
+            tile: 'pointerBase',
+            layer: 'activity/Type5',
+          },
+        ]);
+        road.push({ x: tilePosX, y: tilePosY });
+        actualPos = { x: tilePosX, y: tilePosY };
+      } else if (Math.abs(actualPos.x - nextPos.x) > 1) {
+        const tilePosX = actualPos.x + (actualPos.x < nextPos.x ? 2 : -2);
+        const tilePosY = actualPos.y;
+
+        WA.room.setTiles([
+          {
+            x: tilePosX,
+            y: tilePosY,
+            tile: 'pointerBase',
+            layer: 'activity/Type5',
+          },
+        ]);
+        road.push({ x: tilePosX, y: tilePosY });
+        actualPos = { x: tilePosX, y: tilePosY };
+      }
+    } while (again && i < 20);
 }
+
+WA.player.onPlayerMove(async () => {
+  if (nextPos.x == 0) return; //means has no next edge
+
+  let toCancel;
+  do {
+    toCancel = road.pop();
+    if (toCancel)
+      WA.room.setTiles([
+        {
+          x: toCancel.x,
+          y: toCancel.y,
+          tile: null,
+          layer: 'activity/Type5',
+        },
+      ]);
+  } while (toCancel);
+
+  let actualPos = await WA.player.getPosition();
+  actualPos = {
+    x: Math.floor(actualPos.x / 33),
+    y: Math.floor(actualPos.y / 33),
+  };
+  let i = 0; //debugger
+  let again;
+  if (nextPos.x != 0)
+    do {
+      i++;
+      again =
+        Math.abs(actualPos.y - nextPos.y) < 3 &&
+        Math.abs(actualPos.x - nextPos.x) < 3
+          ? false
+          : true;
+
+      if (Math.abs(actualPos.y - nextPos.y) > 1) {
+        const tilePosX = actualPos.x;
+        const tilePosY = actualPos.y + (actualPos.y < nextPos.y ? 2 : -2);
+        WA.room.setTiles([
+          {
+            x: tilePosX,
+            y: tilePosY,
+            tile: 'pointerBase',
+            layer: 'activity/Type5',
+          },
+        ]);
+        road.push({ x: tilePosX, y: tilePosY });
+        actualPos = { x: tilePosX, y: tilePosY };
+      } else if (Math.abs(actualPos.x - nextPos.x) > 1) {
+        const tilePosX = actualPos.x + (actualPos.x < nextPos.x ? 2 : -2);
+        const tilePosY = actualPos.y;
+
+        WA.room.setTiles([
+          {
+            x: tilePosX,
+            y: tilePosY,
+            tile: 'pointerBase',
+            layer: 'activity/Type5',
+          },
+        ]);
+        road.push({ x: tilePosX, y: tilePosY });
+        actualPos = { x: tilePosX, y: tilePosY };
+      }
+    } while (again && i < 20);
+});
 
 async function getActualActivity() {
   try {
@@ -218,6 +339,10 @@ WA.onInit()
   .then(async () => {
     console.log('Scripting API ready');
     // Flows Menu
+
+    WA.room.area.onLeave('Outside').subscribe(async () => {
+      nextPos = { x: 0, y: 0 };
+    });
 
     WA.room.area.onEnter('Entry').subscribe(async () => {
       try {
@@ -540,11 +665,13 @@ WA.onInit()
           wrongAreaFunction('BannerA3', 'MiroBoard');
           return;
         }*/
-
-        webSite = await WA.nav.openCoWebSite(
-          'https://app.eraser.io/workspace/JVoolrO5JJucnQkr1tK7?origin=share',
-          true
-        );
+        if (actualActivity.platform == 'Papyrus')
+          webSite = await WA.nav.openCoWebSite('https://papyrus/', true);
+        else
+          webSite = await WA.nav.openCoWebSite(
+            'https://app.eraser.io/workspace/JVoolrO5JJucnQkr1tK7?origin=share',
+            true
+          );
       } catch (error) {
         // Handle errors if the API call fails
         console.error('Failed to get API response:', error);
