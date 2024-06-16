@@ -342,6 +342,19 @@ WA.onInit()
 
     WA.room.area.onLeave('Outside').subscribe(async () => {
       nextPos = { x: 0, y: 0 };
+      let toCancel;
+      do {
+        toCancel = road.pop();
+        if (toCancel)
+          WA.room.setTiles([
+            {
+              x: toCancel.x,
+              y: toCancel.y,
+              tile: null,
+              layer: 'activity/Type5',
+            },
+          ]);
+      } while (toCancel);
     });
 
     WA.room.area.onEnter('Entry').subscribe(async () => {
