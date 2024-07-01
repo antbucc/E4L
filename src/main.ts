@@ -4,6 +4,8 @@ import { bootstrapExtra } from '@workadventure/scripting-api-extra';
 import { AxiosResponse } from 'axios';
 import { API, PolyglotNodeValidation } from './data/api';
 import { ActionMessage } from '@workadventure/iframe-api-typings';
+import { levelUp } from '@workadventure/quests';
+import { keyMapping } from './types/PolyglotFlow';
 //import { messagesPopup } from './components/userInteraction';
 
 console.log('Script started successfully');
@@ -264,16 +266,39 @@ async function getActualActivity() {
     if (!ctx) throw 'No ctx detected';
     await API.getActualNode({ ctxId: ctx })
       .then(async (response) => {
-        console.log(response);
+        console.log((response.data as PolyglotNodeValidation).platform);
 
+        if (actualActivity)
+          if (
+            (response.data as PolyglotNodeValidation).platform !=
+            actualActivity.platform
+          ){
+            //LP completed
+            await levelUp(
+              keyMapping.find((map) =>
+                map.cases.includes(actualActivity.platform)
+              )?.key ?? '',
+              50
+            ); //add points
+            console.log('platform point given');            
+          }
         actualActivity = response.data;
+        console.log(actualActivity);
+        if (!actualActivity.validation){
+          //LP completed
+          await levelUp(keyMapping[0].key, 100);
+          console.log('LP point given') }
+
+        console.log('aaaaaaaaaaaaaaaaaaaaaa');
       })
       .catch(async (error: any) => {
         console.log(error);
-        console.log('error');
+        if(error.response.status)
         if (error.response.status == 400) {
           //means the educator resetted the player context
-          console.log('ctx reset');
+          console.log('ctx reset'); //DA FIXAREEEEEEEEEEEEEEEEEEEEEEEEE SI ROMPE QUALCOSA
+
+          console.log(String(WA.player.state.actualFlow));
           await startActivity(String(WA.player.state.actualFlow)).then(
             async () => {
               console.log('new activity correctly');
@@ -310,7 +335,6 @@ async function startActivity(flowId: string): Promise<any> {
       throw new Error(`HTTP error! Status: ${response.status}`);
     }
     ctx = response.data.ctx;
-
     let flowsUser = WA.player.state.flows as [any];
 
     if (flowsUser != undefined)
@@ -320,10 +344,13 @@ async function startActivity(flowId: string): Promise<any> {
           return false;
         })
       )
-        flowsUser.find((flow) => flowId == flow.flowId).ctx = ctx;
-      else flowsUser[flowsUser.length + 1] = { flowId: flowId, ctx: ctx };
-    else flowsUser = [{ flowId: flowId, ctx: ctx }];
-
+        flowsUser.find((flow) => {
+          if (flow) return flowId == flow.flowId;
+          return false;
+        }).ctx = ctx; //update ctx of a already started LP
+      else flowsUser[flowsUser.length + 1] = { flowId: flowId, ctx: ctx }; //add the new flowId and ctx to the array
+    else flowsUser = [{ flowId: flowId, ctx: ctx }];  //case where there are no ctx-> create the first one
+    
     WA.player.state.flows = flowsUser;
     console.log('starting activity done');
     return;
@@ -339,6 +366,30 @@ WA.onInit()
   .then(async () => {
     console.log('Scripting API ready');
     // Flows Menu
+    WA.room.website.create({name: "logo",
+      url: "./../images/solo_logo_32.png",
+      position: {
+        x: 240,
+        y: 496,
+        width: 64,
+        height: 64,
+      },
+      visible: true,
+      origin: "map",
+      scale: 1,});
+
+      WA.room.website.create({name: "scritta",
+        url: "./../images/solo_scritta_32.png",
+        position: {
+          x: 368,
+          y: 496,
+          width: 418,
+          height: 64,
+        },
+        visible: true,
+        origin: "map",
+        scale: 1,});
+  
 
     WA.room.area.onLeave('Outside').subscribe(async () => {
       nextPos = { x: 0, y: 0 };
@@ -453,6 +504,7 @@ WA.onInit()
 
     WA.room.area.onEnter('activityManager').subscribe(async () => {
       try {
+        //put the disable of the roof
         console.log('testing FlowsMenu');
         menuPopup = WA.ui.openPopup(
           'MenuBanner',
@@ -664,23 +716,22 @@ WA.onInit()
     WA.room.area.onLeave('ActivityType2').subscribe(async () => {
       //wrongAreaPopup.close();
       nextActivityBannerV2('BannerA2');
-    });
+    }); 
 
     // ACTIVITY TYPE 3
     WA.room.area.onEnter('ActivityType3').subscribe(async () => {
       // If you need to send data from the first call
       try {
         console.log('area Activity3');
-
-        /*if (actualActivity.platform != '
-        Board') {
+        //webSite = await WA.nav.openCoWebSite('./../images/papyrusWebp2.png', true);
+        if (actualActivity.platform != 'Papyrus' && actualActivity.platform !='Collaborative') {
           console.log('wrong spot, go to another area');
-          wrongAreaFunction('BannerA3', 'MiroBoard');
+          wrongAreaFunction('BannerA3', 'Papyrus');
           return;
-        }*/
-        if (actualActivity.platform == 'Papyrus')
-          webSite = await WA.nav.openCoWebSite('https://papyrus/', true);
-        else
+        }
+          
+        if (actualActivity.platform == 'Papyrus') webSite = await WA.nav.openCoWebSite('./../images/papyrusWebp1.png', true);
+        else if(actualActivity.platform == 'Collaborative')
           webSite = await WA.nav.openCoWebSite(
             'https://app.eraser.io/workspace/JVoolrO5JJucnQkr1tK7?origin=share',
             true
@@ -708,11 +759,7 @@ WA.onInit()
         closePopup();
         WA.ui.openPopup(
           'BannerA4',
-          'Download and open your notebook (run this link for the download: ' + //@ts-ignore
-            import.meta.env.VITE_BACK_URL +
-            '/api/flows/' +
-            ctx +
-            '/run ).\nExecute the notebook in VSCode to complete the exercise',
+          'Your next activity is coding assessment. Click Open Notebook to open the notebook directly on your VSCode Editor',
           [
             {
               label: 'Open Notebook',
