@@ -367,7 +367,7 @@ WA.onInit()
     console.log('Scripting API ready');
     // Flows Menu
     WA.room.website.create({name: "logo",
-      url: "./../images/solo_logo_32.png",
+      url: "./images/solo_logo_32.png",
       position: {
         x: 240,
         y: 496,
@@ -379,7 +379,7 @@ WA.onInit()
       scale: 1,});
 
       WA.room.website.create({name: "scritta",
-        url: "./../images/solo_scritta_32.png",
+        url: "./images/solo_scritta_32.png",
         position: {
           x: 368,
           y: 496,
@@ -730,7 +730,7 @@ WA.onInit()
           return;
         }
           
-        if (actualActivity.platform == 'Papyrus') webSite = await WA.nav.openCoWebSite('./../images/papyrusWebp1.png', true);
+        if (actualActivity.platform == 'Papyrus') webSite = await WA.nav.openCoWebSite('./images/papyrusWebp1.png', true);
         else if(actualActivity.platform == 'Collaborative')
           webSite = await WA.nav.openCoWebSite(
             'https://app.eraser.io/workspace/JVoolrO5JJucnQkr1tK7?origin=share',
