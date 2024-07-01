@@ -724,7 +724,7 @@ WA.onInit()
       try {
         console.log('area Activity3');
         //webSite = await WA.nav.openCoWebSite('./../images/papyrusWebp2.png', true);        
-        webSite = await WA.nav.openCoWebSite('./../images/papyrusWebp1.png', true);
+        webSite = await WA.nav.openCoWebSite('./../images/papyrusWebpt2.png', true);
         /*if (actualActivity.platform == 'PapyrusWeb')
         else if(actualActivity.platform == 'Collaborative')
           webSite = await WA.nav.openCoWebSite(
