@@ -724,13 +724,13 @@ WA.onInit()
       try {
         console.log('area Activity3');
         //webSite = await WA.nav.openCoWebSite('./../images/papyrusWebp2.png', true);
-        if (actualActivity.platform != 'Papyrus' && actualActivity.platform !='Collaborative') {
+        if (actualActivity.platform != 'PapyrusWeb' && actualActivity.platform !='Collaborative') {
           console.log('wrong spot, go to another area');
           wrongAreaFunction('BannerA3', 'Papyrus');
           return;
         }
           
-        if (actualActivity.platform == 'Papyrus') webSite = await WA.nav.openCoWebSite('./images/papyrusWebp1.png', true);
+        if (actualActivity.platform == 'PapyrusWeb') webSite = await WA.nav.openCoWebSite('./images/papyrusWebp1.png', true);
         else if(actualActivity.platform == 'Collaborative')
           webSite = await WA.nav.openCoWebSite(
             'https://app.eraser.io/workspace/JVoolrO5JJucnQkr1tK7?origin=share',
