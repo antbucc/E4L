@@ -724,8 +724,8 @@ WA.onInit()
       try {
         console.log('area Activity3');
         //webSite = await WA.nav.openCoWebSite('./../images/papyrusWebp2.png', true);        
-        webSite = await WA.nav.openCoWebSite('./images/papyrusWebp1.png', true);
-        /*if (actualActivity.platform == 'PapyrusWeb') 
+        webSite = await WA.nav.openCoWebSite('./../images/papyrusWebp1.png', true);
+        /*if (actualActivity.platform == 'PapyrusWeb')
         else if(actualActivity.platform == 'Collaborative')
           webSite = await WA.nav.openCoWebSite(
             'https://app.eraser.io/workspace/JVoolrO5JJucnQkr1tK7?origin=share',
