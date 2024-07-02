@@ -98,7 +98,9 @@ const mappingActivity = [
 let nextPos = { x: 0, y: 0 };
 
 async function nextActivityBannerV2(areaPopup: string) {
-  await getActualActivity(actualActivity.platform);
+  let platform='';
+  if(actualActivity) platform=actualActivity.platform;
+  await getActualActivity(platform);
   closePopup();
   wrongPopup = WA.ui.openPopup(
     areaPopup,
