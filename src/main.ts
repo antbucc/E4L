@@ -98,7 +98,7 @@ const mappingActivity = [
 let nextPos = { x: 0, y: 0 };
 
 async function nextActivityBannerV2(areaPopup: string) {
-  await getActualActivity();
+  await getActualActivity(actualActivity.platform);
   closePopup();
   wrongPopup = WA.ui.openPopup(
     areaPopup,
@@ -260,7 +260,7 @@ WA.player.onPlayerMove(async () => {
     } while (again && i < 20);
 });
 
-async function getActualActivity() {
+async function getActualActivity(playerPlatform:string) {
   try {
     console.log('getActual');
     if (!ctx) throw 'No ctx detected';
@@ -284,7 +284,7 @@ async function getActualActivity() {
           }
         actualActivity = response.data;
         console.log(actualActivity.validation);
-        if (!actualActivity.validation[0]) {
+        if (!actualActivity.validation[0]&&playerPlatform == actualActivity.platform) {
           //LP completed
           console.log('LP point given');
           await levelUp('keyLP', 100);
@@ -303,7 +303,7 @@ async function getActualActivity() {
             await startActivity(String(WA.player.state.actualFlow)).then(
               async () => {
                 console.log('new activity correctly');
-                await getActualActivity();
+                await getActualActivity('reset');
               }
             );
             return;
@@ -460,7 +460,7 @@ WA.onInit()
         console.log('starting activity');
         await startActivity(String(WA.player.state.actualFlow));
 
-        await getActualActivity();
+        await getActualActivity('instruction');
 
         nextActivityBannerV2('instructions');
         //open a timed popup to send the user to the right location
