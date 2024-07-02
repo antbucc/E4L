@@ -10,7 +10,7 @@ import { keyMapping } from './types/PolyglotFlow';
 
 console.log('Script started successfully');
 
-let ctx: string; //to be remove after becoming obsolete, global ctx to keep tracks of this execution
+let ctx: string | undefined; //to be remove after becoming obsolete, global ctx to keep tracks of this execution
 //let flow: string;
 let actualActivity: PolyglotNodeValidation;
 let menuPopup: any;
@@ -272,7 +272,7 @@ async function getActualActivity() {
           if (
             (response.data as PolyglotNodeValidation).platform !=
             actualActivity.platform
-          ){
+          ) {
             //LP completed
             await levelUp(
               keyMapping.find((map) =>
@@ -280,33 +280,34 @@ async function getActualActivity() {
               )?.key ?? '',
               50
             ); //add points
-            console.log('platform point given');            
+            console.log('platform point given');
           }
         actualActivity = response.data;
-        console.log(actualActivity);
-        if (!actualActivity.validation){
+        console.log(actualActivity.validation);
+        if (!actualActivity.validation[0]) {
           //LP completed
-          await levelUp(keyMapping[0].key, 100);
-          console.log('LP point given') }
-
-        console.log('aaaaaaaaaaaaaaaaaaaaaa');
+          console.log('LP point given');
+          await levelUp('keyLP', 100);
+          WA.player.state.actualFlow = '';
+          ctx = undefined;
+        }
       })
       .catch(async (error: any) => {
         console.log(error);
-        if(error.response.status)
-        if (error.response.status == 400) {
-          //means the educator resetted the player context
-          console.log('ctx reset'); //DA FIXAREEEEEEEEEEEEEEEEEEEEEEEEE SI ROMPE QUALCOSA
+        if (error.response.status)
+          if (error.response.status == 400) {
+            //means the educator resetted the player context
+            console.log('ctx reset'); //DA FIXAREEEEEEEEEEEEEEEEEEEEEEEEE SI ROMPE QUALCOSA
 
-          console.log(String(WA.player.state.actualFlow));
-          await startActivity(String(WA.player.state.actualFlow)).then(
-            async () => {
-              console.log('new activity correctly');
-              await getActualActivity();
-            }
-          );
-          return;
-        }
+            console.log(String(WA.player.state.actualFlow));
+            await startActivity(String(WA.player.state.actualFlow)).then(
+              async () => {
+                console.log('new activity correctly');
+                await getActualActivity();
+              }
+            );
+            return;
+          }
         console.error(
           'Error:',
           error.response.status,
@@ -347,10 +348,12 @@ async function startActivity(flowId: string): Promise<any> {
         flowsUser.find((flow) => {
           if (flow) return flowId == flow.flowId;
           return false;
-        }).ctx = ctx; //update ctx of a already started LP
-      else flowsUser[flowsUser.length + 1] = { flowId: flowId, ctx: ctx }; //add the new flowId and ctx to the array
-    else flowsUser = [{ flowId: flowId, ctx: ctx }];  //case where there are no ctx-> create the first one
-    
+        }).ctx = ctx;
+      //update ctx of a already started LP
+      else flowsUser[flowsUser.length + 1] = { flowId: flowId, ctx: ctx };
+    //add the new flowId and ctx to the array
+    else flowsUser = [{ flowId: flowId, ctx: ctx }]; //case where there are no ctx-> create the first one
+
     WA.player.state.flows = flowsUser;
     console.log('starting activity done');
     return;
@@ -366,8 +369,9 @@ WA.onInit()
   .then(async () => {
     console.log('Scripting API ready');
     // Flows Menu
-    WA.room.website.create({name: "logo",
-      url: "./images/solo_logo_32.png",
+    WA.room.website.create({
+      name: 'logo',
+      url: './images/solo_logo_32.png',
       position: {
         x: 240,
         y: 496,
@@ -375,21 +379,23 @@ WA.onInit()
         height: 64,
       },
       visible: true,
-      origin: "map",
-      scale: 1,});
+      origin: 'map',
+      scale: 1,
+    });
 
-      WA.room.website.create({name: "scritta",
-        url: "./images/solo_scritta_32.png",
-        position: {
-          x: 368,
-          y: 496,
-          width: 418,
-          height: 64,
-        },
-        visible: true,
-        origin: "map",
-        scale: 1,});
-  
+    WA.room.website.create({
+      name: 'scritta',
+      url: './images/solo_scritta_32.png',
+      position: {
+        x: 368,
+        y: 496,
+        width: 418,
+        height: 64,
+      },
+      visible: true,
+      origin: 'map',
+      scale: 1,
+    });
 
     WA.room.area.onLeave('Outside').subscribe(async () => {
       nextPos = { x: 0, y: 0 };
@@ -716,15 +722,18 @@ WA.onInit()
     WA.room.area.onLeave('ActivityType2').subscribe(async () => {
       //wrongAreaPopup.close();
       nextActivityBannerV2('BannerA2');
-    }); 
+    });
 
     // ACTIVITY TYPE 3
     WA.room.area.onEnter('ActivityType3').subscribe(async () => {
       // If you need to send data from the first call
       try {
         console.log('area Activity3');
-        //webSite = await WA.nav.openCoWebSite('./../images/papyrusWebp2.png', true);        
-        webSite = await WA.nav.openCoWebSite('./../images/papyrusWebpt2.png', true);
+        //webSite = await WA.nav.openCoWebSite('./../images/papyrusWebp2.png', true);
+        webSite = await WA.nav.openCoWebSite(
+          './../images/papyrusWebpt2.png',
+          true
+        );
         /*if (actualActivity.platform == 'PapyrusWeb')
         else if(actualActivity.platform == 'Collaborative')
           webSite = await WA.nav.openCoWebSite(
