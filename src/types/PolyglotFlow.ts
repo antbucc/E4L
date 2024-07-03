@@ -31,3 +31,10 @@ export type AIQuestionType = {
   category: number;
   temperature: number;
 };
+
+export const keyMapping = [
+  { key: 'keyLP', cases: ['learningPath'] },
+  { key: 'codingKey', cases: ['VSCode'] },
+  { key: 'collaborativeKey', cases: ['Eraser', 'PapyrusWeb'] },
+  { key: 'knowledgeKey', cases: ['WebApp'] },
+];

@@ -1,22 +1,23 @@
 /// <reference types="@workadventure/iframe-api-typings" />
 
-import {
-  bootstrapExtra,
-} from '@workadventure/scripting-api-extra';
+import { bootstrapExtra } from '@workadventure/scripting-api-extra';
 import { AxiosResponse } from 'axios';
 import { API, PolyglotNodeValidation } from './data/api';
 import { ActionMessage } from '@workadventure/iframe-api-typings';
+import { levelUp } from '@workadventure/quests';
+import { keyMapping } from './types/PolyglotFlow';
 //import { messagesPopup } from './components/userInteraction';
 
 console.log('Script started successfully');
 
-let ctx: string; //to be remove after becoming obsolete, global ctx to keep tracks of this execution
+let ctx: string | undefined; //to be remove after becoming obsolete, global ctx to keep tracks of this execution
 //let flow: string;
 let actualActivity: PolyglotNodeValidation;
 let menuPopup: any;
 let webSite: any = undefined;
 let wrongPopup: any = undefined;
 let instructionPopup: any = undefined;
+let road: { x: number; y: number }[] = [{ x: 0, y: 0 }];
 
 function closeWebsite() {
   if (webSite !== undefined) {
@@ -71,19 +72,35 @@ const mappingActivity = [
   {
     platform: ['VSCode'],
     activityType: 4,
+    pos: {
+      x: 12,
+      y: 6,
+    },
   },
   {
     platform: ['WebApp'],
     activityType: 1,
+    pos: {
+      x: 25,
+      y: 5,
+    },
   },
   {
-    platform: ['Eraser'],
+    platform: ['Eraser', 'Papyrus'],
     activityType: 3,
+    pos: {
+      x: 17,
+      y: 4,
+    },
   },
 ];
 
+let nextPos = { x: 0, y: 0 };
+
 async function nextActivityBannerV2(areaPopup: string) {
-  await getActualActivity();
+  let platform='';
+  if(actualActivity) platform=actualActivity.platform;
+  await getActualActivity(platform);
   closePopup();
   wrongPopup = WA.ui.openPopup(
     areaPopup,
@@ -104,51 +121,203 @@ async function nextActivityBannerV2(areaPopup: string) {
   setTimeout(function () {
     closePopup();
   }, 3000);
+  mappingActivity.map((map) => {
+    if (map.platform.includes(actualActivity.platform))
+      nextPos = { x: map.pos.x, y: map.pos.y + 2 };
+    WA.room.setTiles([
+      {
+        x: map.pos.x,
+        y: map.pos.y,
+        tile: map.platform.includes(actualActivity.platform)
+          ? 'arrowBase'
+          : null,
+        layer: 'activity/Type5',
+      },
+    ]);
+  });
 
-  WA.room.setTiles([
-    {
-      x: 12,
-      y: 6,
-      tile: mappingActivity
-        .find((map) => map.activityType == 4)
-        ?.platform.includes(actualActivity.platform)
-        ? 'arrowBase'
-        : null,
-      layer: 'activity/Type5',
-    },
-    {
-      x: 25,
-      y: 5,
-      tile: mappingActivity
-        .find((map) => map.activityType == 1)
-        ?.platform.includes(actualActivity.platform)
-        ? 'arrowBase'
-        : null,
-      layer: 'activity/Type5',
-    },
-    {
-      x: 17,
-      y: 4,
-      tile: mappingActivity
-        .find((map) => map.activityType == 3)
-        ?.platform.includes(actualActivity.platform)
-        ? 'arrowBase'
-        : null,
-      layer: 'activity/Type5',
-    },
-  ]);
+  let actualPos = await WA.player.getPosition();
+
+  let toCancel;
+  do {
+    toCancel = road.pop();
+    if (toCancel)
+      WA.room.setTiles([
+        {
+          x: toCancel.x,
+          y: toCancel.y,
+          tile: null,
+          layer: 'activity/Type5',
+        },
+      ]);
+  } while (toCancel);
+  actualPos = {
+    x: Math.floor(actualPos.x / 33),
+    y: Math.floor(actualPos.y / 33),
+  };
+  let i = 0; //debugger
+  let again;
+  if (nextPos.x != 0)
+    do {
+      i++;
+      again =
+        Math.abs(actualPos.y - nextPos.y) < 3 &&
+        Math.abs(actualPos.x - nextPos.x) < 3
+          ? false
+          : true;
+
+      if (Math.abs(actualPos.y - nextPos.y) > 1) {
+        const tilePosX = actualPos.x;
+        const tilePosY = actualPos.y + (actualPos.y < nextPos.y ? 2 : -2);
+
+        WA.room.setTiles([
+          {
+            x: tilePosX,
+            y: tilePosY,
+            tile: 'pointerBase',
+            layer: 'activity/Type5',
+          },
+        ]);
+        road.push({ x: tilePosX, y: tilePosY });
+        actualPos = { x: tilePosX, y: tilePosY };
+      } else if (Math.abs(actualPos.x - nextPos.x) > 1) {
+        const tilePosX = actualPos.x + (actualPos.x < nextPos.x ? 2 : -2);
+        const tilePosY = actualPos.y;
+
+        WA.room.setTiles([
+          {
+            x: tilePosX,
+            y: tilePosY,
+            tile: 'pointerBase',
+            layer: 'activity/Type5',
+          },
+        ]);
+        road.push({ x: tilePosX, y: tilePosY });
+        actualPos = { x: tilePosX, y: tilePosY };
+      }
+    } while (again && i < 20);
 }
 
-async function getActualActivity() {
+WA.player.onPlayerMove(async () => {
+  if (nextPos.x == 0) return; //means has no next edge
+
+  let toCancel;
+  do {
+    toCancel = road.pop();
+    if (toCancel)
+      WA.room.setTiles([
+        {
+          x: toCancel.x,
+          y: toCancel.y,
+          tile: null,
+          layer: 'activity/Type5',
+        },
+      ]);
+  } while (toCancel);
+
+  let actualPos = await WA.player.getPosition();
+  actualPos = {
+    x: Math.floor(actualPos.x / 33),
+    y: Math.floor(actualPos.y / 33),
+  };
+  let i = 0; //debugger
+  let again;
+  if (nextPos.x != 0)
+    do {
+      i++;
+      again =
+        Math.abs(actualPos.y - nextPos.y) < 3 &&
+        Math.abs(actualPos.x - nextPos.x) < 3
+          ? false
+          : true;
+
+      if (Math.abs(actualPos.y - nextPos.y) > 1) {
+        const tilePosX = actualPos.x;
+        const tilePosY = actualPos.y + (actualPos.y < nextPos.y ? 2 : -2);
+        WA.room.setTiles([
+          {
+            x: tilePosX,
+            y: tilePosY,
+            tile: 'pointerBase',
+            layer: 'activity/Type5',
+          },
+        ]);
+        road.push({ x: tilePosX, y: tilePosY });
+        actualPos = { x: tilePosX, y: tilePosY };
+      } else if (Math.abs(actualPos.x - nextPos.x) > 1) {
+        const tilePosX = actualPos.x + (actualPos.x < nextPos.x ? 2 : -2);
+        const tilePosY = actualPos.y;
+
+        WA.room.setTiles([
+          {
+            x: tilePosX,
+            y: tilePosY,
+            tile: 'pointerBase',
+            layer: 'activity/Type5',
+          },
+        ]);
+        road.push({ x: tilePosX, y: tilePosY });
+        actualPos = { x: tilePosX, y: tilePosY };
+      }
+    } while (again && i < 20);
+});
+
+async function getActualActivity(playerPlatform:string) {
   try {
+    console.log('getActual');
     if (!ctx) throw 'No ctx detected';
-    const response: AxiosResponse = await API.getActualNode({ ctxId: ctx });
-    if (response.status != 200) {
-      console.error('Error:', response.status, response.statusText);
-      throw new Error(`HTTP error! Status: ${response.status}`);
-    }
-    actualActivity = response.data;
-  } catch (error) {
+    await API.getActualNode({ ctxId: ctx })
+      .then(async (response) => {
+        console.log((response.data as PolyglotNodeValidation).platform);
+
+        if (actualActivity)
+          if (
+            (response.data as PolyglotNodeValidation).platform !=
+            actualActivity.platform
+          ) {
+            //LP completed
+            await levelUp(
+              keyMapping.find((map) =>
+                map.cases.includes(actualActivity.platform)
+              )?.key ?? '',
+              50
+            ); //add points
+            console.log('platform point given');
+          }
+        actualActivity = response.data;
+        console.log(actualActivity.validation);
+        if (!actualActivity.validation[0]&&playerPlatform == actualActivity.platform) {
+          //LP completed
+          console.log('LP point given');
+          await levelUp('keyLP', 100);
+          WA.player.state.actualFlow = '';
+          ctx = undefined;
+        }
+      })
+      .catch(async (error: any) => {
+        console.log(error);
+        if (error.response.status)
+          if (error.response.status == 400) {
+            //means the educator resetted the player context
+            console.log('ctx reset'); //DA FIXAREEEEEEEEEEEEEEEEEEEEEEEEE SI ROMPE QUALCOSA
+
+            console.log(String(WA.player.state.actualFlow));
+            await startActivity(String(WA.player.state.actualFlow)).then(
+              async () => {
+                console.log('new activity correctly');
+                await getActualActivity('reset');
+              }
+            );
+            return;
+          }
+        console.error(
+          'Error:',
+          error.response.status,
+          error.response.statusText
+        );
+        throw new Error(`HTTP error! Status: ${error.response.status}`);
+      });
+  } catch (error: any) {
     // Handle network errors or other exceptions
     console.error('Error:', error);
     throw error; // Rethrow the error for the caller to handle
@@ -162,17 +331,33 @@ async function startActivity(flowId: string): Promise<any> {
       flowId,
       username,
     });
+    console.log(flowId);
     // Handle error responses
     if (response.status != 200) {
       console.error('Error:', response.status, response.statusText);
       throw new Error(`HTTP error! Status: ${response.status}`);
     }
     ctx = response.data.ctx;
+    let flowsUser = WA.player.state.flows as [any];
 
-    WA.player.state.flows = [
-      WA.player.state.flows,
-      { flowId: flowId, ctx: ctx },
-    ];
+    if (flowsUser != undefined)
+      if (
+        (flowsUser as [{ flowId: string; ctx: string }]).find((flow) => {
+          if (flow != null) return flowId == flow.flowId;
+          return false;
+        })
+      )
+        flowsUser.find((flow) => {
+          if (flow) return flowId == flow.flowId;
+          return false;
+        }).ctx = ctx;
+      //update ctx of a already started LP
+      else flowsUser[flowsUser.length + 1] = { flowId: flowId, ctx: ctx };
+    //add the new flowId and ctx to the array
+    else flowsUser = [{ flowId: flowId, ctx: ctx }]; //case where there are no ctx-> create the first one
+
+    WA.player.state.flows = flowsUser;
+    console.log('starting activity done');
     return;
   } catch (error) {
     // Handle network errors or other exceptions
@@ -186,10 +371,53 @@ WA.onInit()
   .then(async () => {
     console.log('Scripting API ready');
     // Flows Menu
+    WA.room.website.create({
+      name: 'logo',
+      url: './images/solo_logo_32.png',
+      position: {
+        x: 240,
+        y: 496,
+        width: 64,
+        height: 64,
+      },
+      visible: true,
+      origin: 'map',
+      scale: 1,
+    });
+
+    WA.room.website.create({
+      name: 'scritta',
+      url: './images/solo_scritta_32.png',
+      position: {
+        x: 368,
+        y: 496,
+        width: 418,
+        height: 64,
+      },
+      visible: true,
+      origin: 'map',
+      scale: 1,
+    });
+
+    WA.room.area.onLeave('Outside').subscribe(async () => {
+      nextPos = { x: 0, y: 0 };
+      let toCancel;
+      do {
+        toCancel = road.pop();
+        if (toCancel)
+          WA.room.setTiles([
+            {
+              x: toCancel.x,
+              y: toCancel.y,
+              tile: null,
+              layer: 'activity/Type5',
+            },
+          ]);
+      } while (toCancel);
+    });
 
     WA.room.area.onEnter('Entry').subscribe(async () => {
       try {
-        console.log(WA.player.state.actualFlow);
         closeInstruction();
         if (!WA.player.state.actualFlow) {
           instructionPopup = WA.ui.openPopup(
@@ -212,9 +440,29 @@ WA.onInit()
           return;
         }
         //@ts-ignore
-        //if(WA.player.state.ctx)
+
+        console.log(WA.player.state.actualFlow);
+        const flowsUser = WA.player.state.flows;
+
+        if (flowsUser != undefined)
+          if (
+            (flowsUser as [{ flowId: string; ctx: string }]).find(
+              (flow: { flowId: string }) =>
+                flow?.flowId == WA.player.state.actualFlow
+            ) != undefined
+          ) {
+            ctx = (flowsUser as [{ flowId: string; ctx: string }]).find(
+              (flow: { flowId: string }) =>
+                flow?.flowId == WA.player.state.actualFlow
+            )!.ctx;
+            console.log('ctx already created, continue activity');
+            nextActivityBannerV2('instructions');
+            return;
+          }
+        console.log('starting activity');
         await startActivity(String(WA.player.state.actualFlow));
-        await getActualActivity();
+
+        await getActualActivity('instruction');
 
         nextActivityBannerV2('instructions');
         //open a timed popup to send the user to the right location
@@ -264,6 +512,7 @@ WA.onInit()
 
     WA.room.area.onEnter('activityManager').subscribe(async () => {
       try {
+        //put the disable of the roof
         console.log('testing FlowsMenu');
         menuPopup = WA.ui.openPopup(
           'MenuBanner',
@@ -482,18 +731,17 @@ WA.onInit()
       // If you need to send data from the first call
       try {
         console.log('area Activity3');
-
-        /*if (actualActivity.platform != '
-        Board') {
-          console.log('wrong spot, go to another area');
-          wrongAreaFunction('BannerA3', 'MiroBoard');
-          return;
-        }*/
-
+        //webSite = await WA.nav.openCoWebSite('./../images/papyrusWebp2.png', true);
         webSite = await WA.nav.openCoWebSite(
-          'https://app.eraser.io/workspace/JVoolrO5JJucnQkr1tK7?origin=share',
+          './../images/papyrusWebpt2.png',
           true
         );
+        /*if (actualActivity.platform == 'PapyrusWeb')
+        else if(actualActivity.platform == 'Collaborative')
+          webSite = await WA.nav.openCoWebSite(
+            'https://app.eraser.io/workspace/JVoolrO5JJucnQkr1tK7?origin=share',
+            true
+          );*/
       } catch (error) {
         // Handle errors if the API call fails
         console.error('Failed to get API response:', error);
@@ -517,11 +765,7 @@ WA.onInit()
         closePopup();
         WA.ui.openPopup(
           'BannerA4',
-          'Download and open your notebook (run this link for the download: ' + //@ts-ignore
-            import.meta.env.VITE_BACK_URL +
-            '/api/flows/' +
-            ctx +
-            '/run ).\nExecute the notebook in VSCode to complete the exercise',
+          'Your next activity is coding assessment. Click Open Notebook to open the notebook directly on your VSCode Editor',
           [
             {
               label: 'Open Notebook',
