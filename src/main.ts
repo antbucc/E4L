@@ -399,6 +399,130 @@ WA.onInit()
       scale: 1,
     });
 
+    WA.room.area.onEnter('contextPolyglot').subscribe(() => {
+      try {
+        triggerMessage = WA.ui.displayActionMessage({
+          message:
+            "press 'space' or click here to open PolyGloT Context",
+          callback: async () => {
+            WA.room.website.create({
+              name: 'polyglotContextMap',
+              url: './images/polyglotContextMap.png',
+              position: {
+                x: 30,
+                y: 400,
+                width: 1000,
+                height: 881,
+              },
+              visible: true,
+              origin: 'map',
+              scale: 1,
+            });
+          },
+        });
+      } catch (error) {
+        console.log(error);
+      }
+    });
+
+    WA.room.area.onLeave('contextPolyglot').subscribe(async () => {
+      triggerMessage.remove();
+      if(WA.room.website.get('polyglotContextMap') != null) WA.room.website.delete('polyglotContextMap');
+    });
+  
+    WA.room.area.onEnter('execution').subscribe(() => {
+      try {
+        triggerMessage = WA.ui.displayActionMessage({
+          message:
+            "press 'space' or click here to visualize the execution lifecycle.",
+          callback: async () => {
+            WA.room.website.create({
+              name: 'executionLifecycle',
+              url: './images/executionLifeCycle.png',
+              position: {
+                x: 30,
+                y: 50,
+                width: 300,
+                height: 200,
+              },
+              visible: true,
+              origin: 'map',
+              scale: 1,
+            });
+          },
+        });
+      } catch (error) {
+        console.log(error);
+      }
+    });
+
+    WA.room.area.onLeave('execution').subscribe(async () => {
+      triggerMessage.remove();
+      if(WA.room.website.get('executionLifecycle') != null) WA.room.website.delete('executionLifecycle');
+    });
+    
+    WA.room.area.onEnter('waImplementation').subscribe(() => {
+      try {
+        triggerMessage = WA.ui.displayActionMessage({
+          message:
+            "press 'space' or click here to see the WorkAdventure integrations.",
+          callback: async () => {
+            WA.room.website.create({
+              name: 'platformImplementations',
+              url: './images/platformImplementations.png',
+              position: {
+                x: 800,
+                y: 50,
+                width: 300,
+                height: 150,
+              },
+              visible: true,
+              origin: 'map',
+              scale: 1,
+            });
+          },
+        });
+      } catch (error) {
+        console.log(error);
+      }
+    });
+
+    WA.room.area.onLeave('waImplementation').subscribe(async () => {
+      triggerMessage.remove();
+      if(WA.room.website.get('platformImplementations') != null) WA.room.website.delete('platformImplementations');
+    });
+    
+    WA.room.area.onEnter('editor').subscribe(() => {
+      try {
+        triggerMessage = WA.ui.displayActionMessage({
+          message:
+            "press 'space' or click here to open the editor details",
+          callback: async () => {
+            WA.room.website.create({
+              name: 'editorImprovements',
+              url: './images/editorImprovements.png',
+              position: {
+                x: 300,
+                y: 300,
+                width: 300,
+                height: 150,
+              },
+              visible: true,
+              origin: 'map',
+              scale: 1,
+            });
+          },
+        });
+      } catch (error) {
+        console.log(error);
+      }
+    });
+
+    WA.room.area.onLeave('editor').subscribe(async () => {
+      triggerMessage.remove();
+      if(WA.room.website.get('editorImprovements') != null) WA.room.website.delete('editorImprovements');
+    });
+    
     WA.room.area.onLeave('Outside').subscribe(async () => {
       nextPos = { x: 0, y: 0 };
       let toCancel;
@@ -731,17 +855,14 @@ WA.onInit()
       // If you need to send data from the first call
       try {
         console.log('area Activity3');
-        //webSite = await WA.nav.openCoWebSite('./../images/papyrusWebp2.png', true);
-        webSite = await WA.nav.openCoWebSite(
-          './../images/papyrusWebpt2.png',
-          true
-        );
-        /*if (actualActivity.platform == 'PapyrusWeb')
+        
+        if (actualActivity.platform == 'PapyrusWeb')
+          webSite = await WA.nav.openCoWebSite('./../images/papyrusWebpt2.png',true);
         else if(actualActivity.platform == 'Collaborative')
           webSite = await WA.nav.openCoWebSite(
             'https://app.eraser.io/workspace/JVoolrO5JJucnQkr1tK7?origin=share',
             true
-          );*/
+          );
       } catch (error) {
         // Handle errors if the API call fails
         console.error('Failed to get API response:', error);

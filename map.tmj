@@ -694,6 +694,50 @@
                  "width":140,
                  "x":251.090909090909,
                  "y":539.818181818182
+                }, 
+                {
+                 "height":64,
+                 "id":45,
+                 "name":"contextPolyglot",
+                 "rotation":0,
+                 "type":"area",
+                 "visible":true,
+                 "width":131,
+                 "x":177.5,
+                 "y":576
+                }, 
+                {
+                 "height":64,
+                 "id":46,
+                 "name":"editor",
+                 "rotation":0,
+                 "type":"area",
+                 "visible":true,
+                 "width":131,
+                 "x":303.5,
+                 "y":410
+                }, 
+                {
+                 "height":64,
+                 "id":47,
+                 "name":"execution",
+                 "rotation":0,
+                 "type":"area",
+                 "visible":true,
+                 "width":131,
+                 "x":265.5,
+                 "y":196
+                }, 
+                {
+                 "height":64,
+                 "id":48,
+                 "name":"waImplementation",
+                 "rotation":0,
+                 "type":"area",
+                 "visible":true,
+                 "width":131,
+                 "x":565.5,
+                 "y":162
                 }],
          "opacity":1,
          "type":"objectgroup",
@@ -808,7 +852,7 @@
          "y":0
         }],
  "nextlayerid":74,
- "nextobjectid":45,
+ "nextobjectid":50,
  "orientation":"orthogonal",
  "properties":[
         {
