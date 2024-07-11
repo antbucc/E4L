@@ -703,8 +703,8 @@
                  "type":"area",
                  "visible":true,
                  "width":131,
-                 "x":177.5,
-                 "y":576
+                 "x":316.5,
+                 "y":573
                 }, 
                 {
                  "height":64,
@@ -714,8 +714,8 @@
                  "type":"area",
                  "visible":true,
                  "width":131,
-                 "x":303.5,
-                 "y":410
+                 "x":260.5,
+                 "y":222
                 }, 
                 {
                  "height":64,
@@ -725,19 +725,19 @@
                  "type":"area",
                  "visible":true,
                  "width":131,
-                 "x":265.5,
-                 "y":196
+                 "x":550.5,
+                 "y":161
                 }, 
                 {
                  "height":64,
                  "id":48,
-                 "name":"waImplementation",
+                 "name":"architecture",
                  "rotation":0,
                  "type":"area",
                  "visible":true,
                  "width":131,
-                 "x":565.5,
-                 "y":162
+                 "x":232.5,
+                 "y":390
                 }],
          "opacity":1,
          "type":"objectgroup",

@@ -97,30 +97,7 @@ const mappingActivity = [
 
 let nextPos = { x: 0, y: 0 };
 
-async function nextActivityBannerV2(areaPopup: string) {
-  let platform='';
-  if(actualActivity) platform=actualActivity.platform;
-  await getActualActivity(platform);
-  closePopup();
-  wrongPopup = WA.ui.openPopup(
-    areaPopup,
-    'Your next activity is in "' +
-      actualActivity.platform +
-      '", go to the correct area.',
-    [
-      {
-        label: 'Close',
-        className: 'normal',
-        callback: () => {
-          // Close the popup when the "Close" button is pressed.
-          closePopup();
-        },
-      },
-    ]
-  );
-  setTimeout(function () {
-    closePopup();
-  }, 3000);
+async function directions() {
   mappingActivity.map((map) => {
     if (map.platform.includes(actualActivity.platform))
       nextPos = { x: map.pos.x, y: map.pos.y + 2 };
@@ -198,6 +175,32 @@ async function nextActivityBannerV2(areaPopup: string) {
     } while (again && i < 20);
 }
 
+async function nextActivityBannerV2(areaPopup: string) {
+  let platform = '';
+  if (actualActivity) platform = actualActivity.platform;
+  await getActualActivity(platform);
+  closePopup();
+  wrongPopup = WA.ui.openPopup(
+    areaPopup,
+    'Your next activity is in "' +
+      actualActivity.platform +
+      '", go to the correct area.',
+    [
+      {
+        label: 'Close',
+        className: 'normal',
+        callback: () => {
+          // Close the popup when the "Close" button is pressed.
+          closePopup();
+        },
+      },
+    ]
+  );
+  setTimeout(function () {
+    closePopup();
+  }, 3000);
+}
+
 WA.player.onPlayerMove(async () => {
   if (nextPos.x == 0) return; //means has no next edge
 
@@ -262,7 +265,7 @@ WA.player.onPlayerMove(async () => {
     } while (again && i < 20);
 });
 
-async function getActualActivity(playerPlatform:string) {
+async function getActualActivity(playerPlatform: string) {
   try {
     console.log('getActual');
     if (!ctx) throw 'No ctx detected';
@@ -286,7 +289,10 @@ async function getActualActivity(playerPlatform:string) {
           }
         actualActivity = response.data;
         console.log(actualActivity.validation);
-        if (!actualActivity.validation[0]&&playerPlatform == actualActivity.platform) {
+        if (
+          !actualActivity.validation[0] &&
+          playerPlatform == actualActivity.platform
+        ) {
           //LP completed
           console.log('LP point given');
           await levelUp('keyLP', 100);
@@ -402,21 +408,20 @@ WA.onInit()
     WA.room.area.onEnter('contextPolyglot').subscribe(() => {
       try {
         triggerMessage = WA.ui.displayActionMessage({
-          message:
-            "press 'space' or click here to open PolyGloT Context",
+          message: "press 'space' or click here to open PolyGloT Context",
           callback: async () => {
             WA.room.website.create({
               name: 'polyglotContextMap',
               url: './images/polyglotContextMap.png',
               position: {
-                x: 30,
-                y: 400,
-                width: 1000,
-                height: 881,
+                x: 400,
+                y: 220,
+                width: 489,
+                height: 431,
               },
               visible: true,
               origin: 'map',
-              scale: 1,
+              scale: 0.2,
             });
           },
         });
@@ -427,27 +432,28 @@ WA.onInit()
 
     WA.room.area.onLeave('contextPolyglot').subscribe(async () => {
       triggerMessage.remove();
-      if(WA.room.website.get('polyglotContextMap') != null) WA.room.website.delete('polyglotContextMap');
+      if (WA.room.website.get('polyglotContextMap') != null)
+        WA.room.website.delete('polyglotContextMap');
     });
-  
-    WA.room.area.onEnter('execution').subscribe(() => {
+
+    WA.room.area.onEnter('architecture').subscribe(() => {
       try {
         triggerMessage = WA.ui.displayActionMessage({
           message:
-            "press 'space' or click here to visualize the execution lifecycle.",
+            "press 'space' or click here to see the Architecture.",
           callback: async () => {
             WA.room.website.create({
-              name: 'executionLifecycle',
-              url: './images/executionLifeCycle.png',
+              name: 'architecture',
+              url: './images/PolyglotArchitecture.png',
               position: {
-                x: 30,
-                y: 50,
-                width: 300,
-                height: 200,
+                x: 300,
+                y: 200,
+                width: 743,
+                height: 400,
               },
               visible: true,
               origin: 'map',
-              scale: 1,
+              scale: 0.18,
             });
           },
         });
@@ -456,60 +462,61 @@ WA.onInit()
       }
     });
 
-    WA.room.area.onLeave('execution').subscribe(async () => {
+    WA.room.area.onLeave('architecture').subscribe(async () => {
       triggerMessage.remove();
-      if(WA.room.website.get('executionLifecycle') != null) WA.room.website.delete('executionLifecycle');
-    });
-    
-    WA.room.area.onEnter('waImplementation').subscribe(() => {
-      try {
-        triggerMessage = WA.ui.displayActionMessage({
-          message:
-            "press 'space' or click here to see the WorkAdventure integrations.",
-          callback: async () => {
-            WA.room.website.create({
-              name: 'platformImplementations',
-              url: './images/platformImplementations.png',
-              position: {
-                x: 800,
-                y: 50,
-                width: 300,
-                height: 150,
-              },
-              visible: true,
-              origin: 'map',
-              scale: 1,
-            });
-          },
-        });
-      } catch (error) {
-        console.log(error);
-      }
+      if (WA.room.website.get('architecture') != null)
+        WA.room.website.delete('architecture');
     });
 
-    WA.room.area.onLeave('waImplementation').subscribe(async () => {
-      triggerMessage.remove();
-      if(WA.room.website.get('platformImplementations') != null) WA.room.website.delete('platformImplementations');
-    });
-    
     WA.room.area.onEnter('editor').subscribe(() => {
       try {
         triggerMessage = WA.ui.displayActionMessage({
-          message:
-            "press 'space' or click here to open the editor details",
+          message: "press 'space' or click here to open the editor details",
           callback: async () => {
             WA.room.website.create({
               name: 'editorImprovements',
               url: './images/editorImprovements.png',
               position: {
-                x: 300,
-                y: 300,
-                width: 300,
-                height: 150,
+                x: 70,
+                y: 40,
+                width: 1000,
+                height: 1000,
               },
               visible: true,
               origin: 'map',
-              scale: 1,
+              scale: 0.3,
+            });
+            WA.room.website.create({
+              name: 'editorScreen',
+              url: './images/editorScreen.png',
+              position: {
+                x: 12*32,
+                y: 4*32,
+                width: 1000,
+                height: 1000,
+              },
+              visible: true,
+              origin: 'map',
+              scale: 0.3,
+            });
+            triggerMessage = WA.ui.displayActionMessage({
+              message:
+                "press 'space' or click here to open the example of AI modal.",
+              callback: async () => {
+                WA.room.website.create({
+                  name: 'aiTool',
+                  url: './images/aiTool.png',
+                  position: {
+                    x: 30,
+                    y: 224,
+                    width: 1000,
+                    height: 1000,
+                  },
+                  visible: true,
+                  origin: 'map',
+                  scale: 0.18,
+                });
+              },
             });
           },
         });
@@ -520,9 +527,62 @@ WA.onInit()
 
     WA.room.area.onLeave('editor').subscribe(async () => {
       triggerMessage.remove();
-      if(WA.room.website.get('editorImprovements') != null) WA.room.website.delete('editorImprovements');
+      if (WA.room.website.get('editorImprovements') != null)
+        WA.room.website.delete('editorImprovements');
+      if (WA.room.website.get('editorScreen') != null)
+        WA.room.website.delete('editorScreen');
+      if (WA.room.website.get('aiTool') != null)
+        WA.room.website.delete('aiTool');
     });
-    
+
+    WA.room.area.onEnter('execution').subscribe(() => {
+      try {
+        triggerMessage = WA.ui.displayActionMessage({
+          message:
+            "press 'space' or click here to visualize the execution lifecycle.",
+          callback: async () => {
+            WA.room.website.create({
+              name: 'executionLifecycle',
+              url: './images/executionLifeCycle.png',
+              position: {
+                x: 180,
+                y: 64,
+                width: 1000,
+                height: 1000,
+              },
+              visible: true,
+              origin: 'map',
+              scale: 0.18,
+            });
+            WA.room.website.create({
+              name: 'platformImplementations',
+              url: './images/platformImplementations.png',
+              position: {
+                x: 512,
+                y: 215,
+                width: 743,
+                height: 400,
+              },
+              visible: true,
+              origin: 'map',
+              scale: 0.18,
+            });
+          },
+        });
+      } catch (error) {
+        console.log(error);
+      }
+    });
+
+    WA.room.area.onLeave('execution').subscribe(async () => {
+      triggerMessage.remove();
+      if (WA.room.website.get('executionLifecycle') != null)
+        WA.room.website.delete('executionLifecycle');
+      if (WA.room.website.get('platformImplementations') != null)
+        WA.room.website.delete('platformImplementations');
+      directions();
+    });
+
     WA.room.area.onLeave('Outside').subscribe(async () => {
       nextPos = { x: 0, y: 0 };
       let toCancel;
@@ -855,10 +915,13 @@ WA.onInit()
       // If you need to send data from the first call
       try {
         console.log('area Activity3');
-        
+
         if (actualActivity.platform == 'PapyrusWeb')
-          webSite = await WA.nav.openCoWebSite('./../images/papyrusWebpt2.png',true);
-        else if(actualActivity.platform == 'Collaborative')
+          webSite = await WA.nav.openCoWebSite(
+            './../images/papyrusWebpt2.png',
+            true
+          );
+        else if (actualActivity.platform == 'Collaborative')
           webSite = await WA.nav.openCoWebSite(
             'https://app.eraser.io/workspace/JVoolrO5JJucnQkr1tK7?origin=share',
             true
