@@ -473,7 +473,7 @@ WA.onInit()
         triggerMessage = WA.ui.displayActionMessage({
           message: "press 'space' or click here to open the editor details",
           callback: async () => {
-            WA.room.website.create({
+              WA.room.website.create({
               name: 'editorImprovements',
               url: './images/editorImprovements.png',
               position: {
@@ -491,7 +491,7 @@ WA.onInit()
               url: './images/editorScreen.png',
               position: {
                 x: 12*32,
-                y: 4*32,
+                y: 180,
                 width: 1000,
                 height: 1000,
               },
@@ -514,7 +514,7 @@ WA.onInit()
                   },
                   visible: true,
                   origin: 'map',
-                  scale: 0.18,
+                  scale: 0.24,
                 });
               },
             });
