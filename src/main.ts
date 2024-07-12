@@ -635,8 +635,10 @@ WA.onInit()
               undefined,
               55
             );
+            levelUp('bachDegree', 500);
           },
         });
+        
       } catch (error) {
         console.log(error);
       }
