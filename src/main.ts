@@ -873,6 +873,19 @@ WA.onInit()
           wrongAreaFunction('BannerA1', 'WebApp');
           return;
         }
+        WA.room.website.create({
+          name: 'bachalorBadge',
+          url: './images/bachalorBadge.png',
+          position: {
+            x: 586,
+            y: 192,
+            width: 1000,
+            height: 1000,
+          },
+          visible: true,
+          origin: 'map',
+          scale: 0.6,
+        });
         const URL =
           //@ts-ignore
           import.meta.env.VITE_WEBAPP_URL +
@@ -890,6 +903,7 @@ WA.onInit()
 
     WA.room.area.onLeave('ActivityType1').subscribe(async () => {
       closeWebsite();
+      if(WA.room.website.get('bachalorBadge')!=null) WA.room.website.delete('bachalorBadge');
       nextActivityBannerV2('BannerA1');
     });
 
