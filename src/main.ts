@@ -416,8 +416,8 @@ WA.onInit()
               position: {
                 x: 400,
                 y: 220,
-                width: 489,
-                height: 431,
+                width: 600,
+                height: 600,
               },
               visible: true,
               origin: 'map',
