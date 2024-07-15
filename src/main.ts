@@ -640,7 +640,7 @@ WA.onInit()
                 flow?.flowId == WA.player.state.actualFlow
             )!.ctx;
             console.log('ctx already created, continue activity');
-            nextActivityBannerV2('instructions');
+            //nextActivityBannerV2('instructions');
             return;
           }
         console.log('starting activity');
@@ -648,7 +648,7 @@ WA.onInit()
 
         await getActualActivity('instruction');
 
-        nextActivityBannerV2('instructions');
+        //nextActivityBannerV2('instructions');
         //open a timed popup to send the user to the right location
       } catch (error) {
         // Handle errors if the API call fails
