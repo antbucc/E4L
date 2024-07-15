@@ -415,7 +415,7 @@ WA.onInit()
               url: './images/polyglotContextMap.png',
               position: {
                 x: 400,
-                y: 220,
+                y: 200,
                 width: 600,
                 height: 600,
               },
