@@ -1,5 +1,7 @@
 # WorkAdventure Map Starter Kit
 
+Try the tool with us at the following [link](https://play.workadventu.re/@/fondazione-bruno-kessler/encore/encore-learning-world).
+
 ![map](./map.png)
 
 This is a starter kit to help you build your own map for [WorkAdventure](https://workadventu.re).
