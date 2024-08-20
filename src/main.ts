@@ -18,6 +18,8 @@ let webSite: any = undefined;
 let wrongPopup: any = undefined;
 let instructionPopup: any = undefined;
 let road: { x: number; y: number }[] = [{ x: 0, y: 0 }];
+let projectIdPapy: string;
+let representationPapy: string;
 
 function closeWebsite() {
   if (webSite !== undefined) {
@@ -86,7 +88,7 @@ const mappingActivity = [
     },
   },
   {
-    platform: ['Eraser', 'Papyrus'],
+    platform: ['Eraser', 'PapyrusWeb'],
     activityType: 3,
     pos: {
       x: 17,
@@ -276,13 +278,24 @@ async function getActualActivity(playerPlatform:string) {
             actualActivity.platform
           ) {
             //LP completed
+            if(actualActivity.platform=='PapyrusWeb' && projectIdPapy){
+              const points=(await API.userPapyPoints(projectIdPapy)).data;
+              console.log(points.Grade);
+              const index=(points.Grade as string).indexOf(" out");
+              const grade=(points.Grade as string).substring(0, index);
+              console.log(grade);
+              await levelUp(
+                'UMLKey',
+                /*(grade as number)*/10
+              ); //add points
+              } else{
             await levelUp(
               keyMapping.find((map) =>
                 map.cases.includes(actualActivity.platform)
               )?.key ?? '',
               50
             ); //add points
-            console.log('platform point given');
+            console.log('platform point given');}
           }
         actualActivity = response.data;
         console.log(actualActivity.validation);
@@ -299,7 +312,7 @@ async function getActualActivity(playerPlatform:string) {
         if (error.response.status)
           if (error.response.status == 400) {
             //means the educator resetted the player context
-            console.log('ctx reset'); //DA FIXAREEEEEEEEEEEEEEEEEEEEEEEEE SI ROMPE QUALCOSA
+            console.log('ctx reset');
 
             console.log(String(WA.player.state.actualFlow));
             await startActivity(String(WA.player.state.actualFlow)).then(
@@ -732,17 +745,28 @@ WA.onInit()
       // If you need to send data from the first call
       try {
         console.log('area Activity3');
-        //webSite = await WA.nav.openCoWebSite('./../images/papyrusWebp2.png', true);
-        webSite = await WA.nav.openCoWebSite(
-          './../images/papyrusWebpt2.png',
-          true
-        );
-        /*if (actualActivity.platform == 'PapyrusWeb')
+        
+        if (actualActivity.platform == 'PapyrusWeb'){
+          await API.createAssigmentPapyrus({ ctxId: ctx || '', assignment_id: actualActivity.data.projectUML, nomeUtente: WA.player.name  })
+          .then(async (response) => {
+            projectIdPapy=response.data.project_id;
+            representationPapy=response.data.representation_id;
+            
+            webSite = await WA.nav.openCoWebSite(
+              'https://papygame.tech/projects/'+projectIdPapy+'/edit/'+representationPapy+'?ctxId='+ctx,
+              true
+            );
+          })
+          .catch(async (error: any) => {
+            console.log(error);            
+            throw new Error(`HTTP error! Status: ${error.response.status}`);
+          });
+          }
         else if(actualActivity.platform == 'Collaborative')
           webSite = await WA.nav.openCoWebSite(
             'https://app.eraser.io/workspace/JVoolrO5JJucnQkr1tK7?origin=share',
             true
-          );*/
+          );
       } catch (error) {
         // Handle errors if the API call fails
         console.error('Failed to get API response:', error);
@@ -751,6 +775,7 @@ WA.onInit()
 
     WA.room.area.onLeave('ActivityType3').subscribe(async () => {
       //wrongAreaPopup.close();
+
       nextActivityBannerV2('BannerA3');
       closeWebsite();
     });

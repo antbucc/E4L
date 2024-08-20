@@ -18,6 +18,8 @@ export type FirstBody = {
 export type CtxBody = { ctxId: string };
 export type NextCtxBody = { ctxId: string; satisfiedConditions: string[] };
 
+export type PapyrusBody = {  ctxId: string; assignment_id: string; nomeUtente?: string };
+
 export type PolyglotNode = {
   _id: string;
   type: string;
@@ -48,6 +50,14 @@ const execution = axiosCreate.create({
   },
   //withCredentials: true,
 });
+const papyrusWebAPI = axiosCreate.create({
+  //@ts-ignore
+  baseURL: 'https://papygame.tech/api/v1',
+  headers: {
+    'Content-Type': 'application/json',
+  },
+  //withCredentials: true,
+});
 
 export const API = {
   getLPList: (): Promise<AxiosResponse> => {
@@ -66,5 +76,11 @@ export const API = {
   loadFlowList: (query?: string): Promise<AxiosResponse> => {
     const queryParams = query ? '?q=' + query : '';
     return execution.get(`/api/flows` + queryParams);
+  },
+  createAssigmentPapyrus: (body: PapyrusBody): Promise<AxiosResponse> => {
+    return papyrusWebAPI.post<{}, AxiosResponse, {}>(`/newBlankProject`, body);
+  },
+  userPapyPoints: (projectId: string): Promise<AxiosResponse> => {
+    return papyrusWebAPI.get<{}, AxiosResponse, {}>(`/graderResults?project_id=` + projectId) ;
   },
 };
