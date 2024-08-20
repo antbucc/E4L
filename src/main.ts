@@ -282,11 +282,11 @@ async function getActualActivity(playerPlatform:string) {
               const points=(await API.userPapyPoints(projectIdPapy)).data;
               console.log(points.Grade);
               const index=(points.Grade as string).indexOf(" out");
-              const grade=(points.Grade as string).substring(0, index);
+              const grade=parseInt((points.Grade as string).substring(0, index));
               console.log(grade);
               await levelUp(
                 'UMLKey',
-                /*(grade as number)*/10
+                grade*10
               ); //add points
               } else{
             await levelUp(
