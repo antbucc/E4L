@@ -4,8 +4,9 @@ import { bootstrapExtra } from '@workadventure/scripting-api-extra';
 import { AxiosResponse } from 'axios';
 import { API, PolyglotNodeValidation } from './data/api';
 import { ActionMessage } from '@workadventure/iframe-api-typings';
-import { levelUp } from '@workadventure/quests';
+import { getQuest, levelUp } from '@workadventure/quests';
 import { keyMapping } from './types/PolyglotFlow';
+import { LevelUpResponse } from '@workadventure/quests/dist/LevelUpResponse';
 //import { messagesPopup } from './components/userInteraction';
 
 console.log('Script started successfully');
@@ -100,8 +101,8 @@ const mappingActivity = [
 let nextPos = { x: 0, y: 0 };
 
 async function nextActivityBannerV2(areaPopup: string) {
-  let platform='';
-  if(actualActivity) platform=actualActivity.platform;
+  let platform = '';
+  if (actualActivity) platform = actualActivity.platform;
   await getActualActivity(platform);
   closePopup();
   wrongPopup = WA.ui.openPopup(
@@ -264,7 +265,7 @@ WA.player.onPlayerMove(async () => {
     } while (again && i < 20);
 });
 
-async function getActualActivity(playerPlatform:string) {
+async function getActualActivity(playerPlatform: string) {
   try {
     console.log('getActual');
     if (!ctx) throw 'No ctx detected';
@@ -278,28 +279,48 @@ async function getActualActivity(playerPlatform:string) {
             actualActivity.platform
           ) {
             //LP completed
-            if(actualActivity.platform=='PapyrusWeb' && projectIdPapy){
-              const points=(await API.userPapyPoints(projectIdPapy)).data;
+            if (actualActivity.platform == 'PapyrusWeb' && projectIdPapy) {
+              const points = (await API.userPapyPoints(projectIdPapy)).data;
               console.log(points.Grade);
-              const index=(points.Grade as string).indexOf(" out");
-              const grade=parseInt((points.Grade as string).substring(0, index));
+              const index = (points.Grade as string).indexOf(' out');
+              const grade = parseInt(
+                (points.Grade as string).substring(0, index)
+              );
               console.log(grade);
-              await levelUp(
-                'UMLKey',
-                grade*10
+              await levelUp('UMLKey', grade * 10).then(
+                async (response: LevelUpResponse) => {
+                  if (response.awardedBadges != null)
+                    await levelUp(
+                      'generalKey',
+                      keyMapping.find((map) => map.key == 'UMLKey')
+                        ?.generalPoints ?? 0
+                    );
+                }
               ); //add points
-              } else{
-            await levelUp(
-              keyMapping.find((map) =>
-                map.cases.includes(actualActivity.platform)
-              )?.key ?? '',
-              50
-            ); //add points
-            console.log('platform point given');}
+            } else {
+              await levelUp(
+                keyMapping.find((map) =>
+                  map.cases.includes(actualActivity.platform)
+                )?.key ?? '',
+                50
+              ).then(async (response: LevelUpResponse) => {
+                if (response.awardedBadges != null)
+                  await levelUp(
+                    'generalKey',
+                    keyMapping.find((map) =>
+                      map.cases.includes(actualActivity.platform)
+                    )?.generalPoints ?? 0
+                  );
+              }); //add points
+              console.log('platform point given');
+            }
           }
         actualActivity = response.data;
         console.log(actualActivity.validation);
-        if (!actualActivity.validation[0]&&playerPlatform == actualActivity.platform) {
+        if (
+          !actualActivity.validation[0] &&
+          playerPlatform == actualActivity.platform
+        ) {
           //LP completed
           console.log('LP point given');
           await levelUp('keyLP', 100);
@@ -744,24 +765,32 @@ WA.onInit()
       // If you need to send data from the first call
       try {
         console.log('area Activity3');
-        
-        if (actualActivity.platform == 'PapyrusWeb'){
-          await API.createAssigmentPapyrus({ ctxId: ctx || '', assignment_id: actualActivity.data.projectUML, nomeUtente: WA.player.name  })
-          .then(async (response) => {
-            projectIdPapy=response.data.project_id;
-            representationPapy=response.data.representation_id;
-            
-            webSite = await WA.nav.openCoWebSite(
-              'https://papygame.tech/projects/'+projectIdPapy+'/edit/'+representationPapy+'?ctxId='+ctx,
-              true
-            );
+
+        if (actualActivity.platform == 'PapyrusWeb') {
+          await API.createAssigmentPapyrus({
+            ctxId: ctx || '',
+            assignment_id: actualActivity.data.projectUML,
+            nomeUtente: WA.player.name,
           })
-          .catch(async (error: any) => {
-            console.log(error);            
-            throw new Error(`HTTP error! Status: ${error.response.status}`);
-          });
-          }
-        else if(actualActivity.platform == 'Collaborative')
+            .then(async (response) => {
+              projectIdPapy = response.data.project_id;
+              representationPapy = response.data.representation_id;
+
+              webSite = await WA.nav.openCoWebSite(
+                'https://papygame.tech/projects/' +
+                  projectIdPapy +
+                  '/edit/' +
+                  representationPapy +
+                  '?ctxId=' +
+                  ctx,
+                true
+              );
+            })
+            .catch(async (error: any) => {
+              console.log(error);
+              throw new Error(`HTTP error! Status: ${error.response.status}`);
+            });
+        } else if (actualActivity.platform == 'Collaborative')
           webSite = await WA.nav.openCoWebSite(
             'https://app.eraser.io/workspace/JVoolrO5JJucnQkr1tK7?origin=share',
             true
@@ -840,6 +869,34 @@ WA.onInit()
 
     WA.room.area.onLeave('ActivityType4').subscribe(async () => {
       nextActivityBannerV2('BannerA4');
+    });
+
+    //cheat way to remove point from the player
+    WA.room.area.onEnter('cleaningArea').subscribe(() => {
+      try {
+        triggerMessage = WA.ui.displayActionMessage({
+          message:
+            "Attention, if you press 'space' or click here to clean your points",
+          callback: async () => {
+            console.log('deleting point');
+            keyMapping.map(async (item) => {
+              const playerQuest = await getQuest(item.key);
+              console.log(playerQuest);
+              if (playerQuest) await levelUp(item.key, -playerQuest.xp);
+            });
+            console.log('Points removed from the player');
+          },
+        });
+
+        return;
+      } catch (error) {
+        console.log(error);
+      }
+    });
+
+    WA.room.area.onLeave('cleaningArea').subscribe(async () => {
+      triggerMessage.remove();
+      closeWebsite();
     });
 
     // The line below bootstraps the Scripting API Extra library that adds a number of advanced properties/features to WorkAdventure
