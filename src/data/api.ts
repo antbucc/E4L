@@ -18,7 +18,11 @@ export type FirstBody = {
 export type CtxBody = { ctxId: string };
 export type NextCtxBody = { ctxId: string; satisfiedConditions: string[] };
 
-export type PapyrusBody = {  ctxId: string; assignment_id: string; nomeUtente?: string };
+export type PapyrusBody = {
+  ctxId: string;
+  assignment_id: string;
+  nomeUtente?: string;
+};
 
 export type PolyglotNode = {
   _id: string;
@@ -81,6 +85,8 @@ export const API = {
     return papyrusWebAPI.post<{}, AxiosResponse, {}>(`/newBlankProject`, body);
   },
   userPapyPoints: (projectId: string): Promise<AxiosResponse> => {
-    return papyrusWebAPI.get<{}, AxiosResponse, {}>(`/graderResults?project_id=` + projectId) ;
+    return papyrusWebAPI.get<{}, AxiosResponse, {}>(
+      `/graderResults?project_id=` + projectId
+    );
   },
 };

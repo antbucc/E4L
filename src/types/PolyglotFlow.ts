@@ -33,9 +33,10 @@ export type AIQuestionType = {
 };
 
 export const keyMapping = [
-  { key: 'keyLP', cases: ['learningPath'] },
-  { key: 'codingKey', cases: ['VSCode'] },
-  { key: 'collaborativeKey', cases: ['Eraser'] },
-  { key: 'UMLKey', cases: ['PapyrusWeb'] },
-  { key: 'knowledgeKey', cases: ['WebApp'] },
+  { key: 'keyLP', cases: ['learningPath'], generalPoints: 100 },
+  { key: 'codingKey', cases: ['VSCode'], generalPoints: 100 },
+  { key: 'collaborativeKey', cases: ['Eraser'], generalPoints: 100 },
+  { key: 'UMLKey', cases: ['PapyrusWeb'], generalPoints: 100 },
+  { key: 'knowledgeKey', cases: ['WebApp'], generalPoints: 100 },
+  { key: 'generalKey', cases: [], generalPoints: 100 },
 ];
