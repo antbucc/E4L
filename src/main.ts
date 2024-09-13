@@ -529,7 +529,7 @@ WA.onInit()
 
         webSite = await WA.nav.openCoWebSite(
           //@ts-ignore
-          import.meta.env.VITE_WEBAPP_URL + '/?flowList',
+          import.meta.env.VITE_WEBAPP_URL + '/flowMenu',
           true,
           undefined,
           55
@@ -663,8 +663,8 @@ WA.onInit()
             webSite = await WA.nav.openCoWebSite(
               //@ts-ignore
               import.meta.env.VITE_WEBAPP_URL +
-                '/?flowList=' +
-                WA.player.state.actualFlow,
+                '/flowShower/' +
+                WA.player.state.actualFlow ?? '',
               true,
               undefined,
               55
@@ -726,11 +726,7 @@ WA.onInit()
         }
         const URL =
           //@ts-ignore
-          import.meta.env.VITE_WEBAPP_URL +
-          '/?&ctx=' +
-          ctx +
-          '&rememberTipologyQuiz=' +
-          actualActivity.type;
+          import.meta.env.VITE_WEBAPP_URL + '/tools/' + ctx;
         webSite = await WA.nav.openCoWebSite(URL, true);
         console.log(URL);
         //open a timed popup to send the user to the right location
