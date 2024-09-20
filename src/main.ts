@@ -3,11 +3,10 @@
 import { bootstrapExtra } from '@workadventure/scripting-api-extra';
 import { AxiosResponse } from 'axios';
 import { API, PolyglotNodeValidation } from './data/api';
-import { ActionMessage, Area } from '@workadventure/iframe-api-typings';
+import { ActionMessage } from '@workadventure/iframe-api-typings';
 import { getQuest, levelUp } from '@workadventure/quests';
-import { keyMapping, layerType } from './types/PolyglotFlow';
+import { keyMapping } from './types/PolyglotFlow';
 import { LevelUpResponse } from '@workadventure/quests/dist/LevelUpResponse';
-import { act } from 'react';
 //import { messagesPopup } from './components/userInteraction';
 
 console.log('Script started successfully');
@@ -97,12 +96,14 @@ async function narrativeMessage() {
 });
 */
   const playerPos = await WA.player.getPosition();
-  console.log(playerPos.y)
-  const bannerPosition = playerPos.y > 300 ? "bannerNarrative2" : "bannerNarrative1";
+  console.log(playerPos.y);
+  const bannerPosition =
+    playerPos.y > 300 ? 'bannerNarrative2' : 'bannerNarrative1';
 
- let narration="The city of Technopolis is falling apart. Its digital infrastructure, once the envy of the world, is now in chaos due to a centuries-old, corrupted system architecture. As an appointed Architect of Code, your task is to restore stability. But this mission is not yours alone—there are others, racing against you to solve Technopolis' problems and earn the title of Grand Architect. \nYou'll traverse a sprawling digital city using a 2D map to navigate through different rooms where critical missions await. Every room contains learning challenges related to UML Modeling and in particular Class diagrams. Along the way, you'll collect points, badges, and level up, but only the top three learners will appear on the final Leaderboard, earning the ultimate rewards.";
- if(actualActivity) narration=actualActivity.description;
- triggerMessage = WA.ui.displayActionMessage({
+  let narration =
+    "The city of Technopolis is falling apart. Its digital infrastructure, once the envy of the world, is now in chaos due to a centuries-old, corrupted system architecture. As an appointed Architect of Code, your task is to restore stability. But this mission is not yours alone—there are others, racing against you to solve Technopolis' problems and earn the title of Grand Architect. \nYou'll traverse a sprawling digital city using a 2D map to navigate through different rooms where critical missions await. Every room contains learning challenges related to UML Modeling and in particular Class diagrams. Along the way, you'll collect points, badges, and level up, but only the top three learners will appear on the final Leaderboard, earning the ultimate rewards.";
+  if (actualActivity) narration = actualActivity.description;
+  triggerMessage = WA.ui.displayActionMessage({
     message: "press 'space' or click here to open the narrative",
     callback: async () => {
       closeInstruction();
@@ -684,7 +685,7 @@ WA.onInit()
 
     WA.room.area.onEnter('instructions').subscribe(() => {
       try {
-      triggerMessage.remove();
+        triggerMessage.remove();
         if (!WA.player.state.actualFlow) {
           triggerMessage = WA.ui.displayActionMessage({
             message:
