@@ -827,11 +827,15 @@ WA.onInit()
         console.log('area Activity3');
 
         if (actualActivity.platform == 'PapyrusWeb') {
-          WA.ui.openPopup(
+          const waitingPopup = WA.ui.openPopup(
             'BannerA3',
             'Loading your assignment inside PapyrusWeb, wait a moment',
             []
           );
+          setTimeout(function () {
+            waitingPopup.close();
+          }, 3000);
+
           await API.createAssigmentPapyrus({
             ctxId: ctx || '',
             assignment_id: actualActivity.data.idUML,
