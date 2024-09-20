@@ -705,6 +705,28 @@
                  "width":30.6666666666667,
                  "x":1025.33333333333,
                  "y":616
+                }, 
+                {
+                 "height":158,
+                 "id":48,
+                 "name":"bannerNarrative1",
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":705.333333333333,
+                 "x":232.666666666667,
+                 "y":248
+                }, 
+                {
+                 "height":158,
+                 "id":50,
+                 "name":"bannerNarrative2",
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":705.333,
+                 "x":161.3335,
+                 "y":207
                 }],
          "opacity":1,
          "type":"objectgroup",
@@ -819,7 +841,7 @@
          "y":0
         }],
  "nextlayerid":74,
- "nextobjectid":46,
+ "nextobjectid":51,
  "orientation":"orthogonal",
  "properties":[
         {
