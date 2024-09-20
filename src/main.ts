@@ -344,31 +344,37 @@ async function getActualActivity(playerPlatform: string) {
                 (points.Grade as string).substring(0, index)
               );
               console.log(grade);
-              await levelUp('UMLKey', grade * 10).then(
-                async (response: LevelUpResponse) => {
+              await levelUp('UMLKey', grade * 10)
+                .then(async (response: LevelUpResponse) => {
                   if (response.awardedBadges != null)
                     await levelUp(
                       'generalKey',
                       keyMapping.find((map) => map.key == 'UMLKey')
                         ?.generalPoints ?? 0
                     );
-                }
-              ); //add points
+                })
+                .catch((e) => console.log(e)); //add points
             } else {
-              await levelUp(
-                keyMapping.find((map) =>
-                  map.cases.includes(actualActivity.platform)
-                )?.key ?? '',
-                50
-              ).then(async (response: LevelUpResponse) => {
-                if (response.awardedBadges != null)
-                  await levelUp(
-                    'generalKey',
-                    keyMapping.find((map) =>
-                      map.cases.includes(actualActivity.platform)
-                    )?.generalPoints ?? 0
-                  );
-              }); //add points
+              try {
+                await levelUp(
+                  keyMapping.find((map) =>
+                    map.cases.includes(actualActivity.platform)
+                  )?.key ?? '',
+                  50
+                )
+                  .then(async (response: LevelUpResponse) => {
+                    if (response.awardedBadges != null)
+                      await levelUp(
+                        'generalKey',
+                        keyMapping.find((map) =>
+                          map.cases.includes(actualActivity.platform)
+                        )?.generalPoints ?? 0
+                      );
+                  })
+                  .catch((e) => console.log(e)); //add points
+              } catch (error) {
+                console.log(error);
+              }
               console.log('platform point given');
             }
           }
@@ -380,7 +386,7 @@ async function getActualActivity(playerPlatform: string) {
         ) {
           //LP completed
           console.log('LP point given');
-          await levelUp('keyLP', 100);
+          await levelUp('keyLP', 100).catch((e) => console.log(e));
           WA.player.state.actualFlow = '';
           ctx = undefined;
         }
@@ -822,6 +828,11 @@ WA.onInit()
         console.log('area Activity3');
 
         if (actualActivity.platform == 'PapyrusWeb') {
+          WA.ui.openPopup(
+            'BannerA3',
+            'Loading your assignment inside PapyrusWeb, wait a moment',
+            []
+          );
           await API.createAssigmentPapyrus({
             ctxId: ctx || '',
             assignment_id: actualActivity.data.idUML,
