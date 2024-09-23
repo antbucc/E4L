@@ -60,7 +60,7 @@ function closeNarrative() {
 }
 
 function displayMainDoor() { 
-  if(WA.player.state.actualFlow) WA.state.door=true;
+  if(WA.player.state.actualFlow && WA.player.state.actualFlow!='null') WA.state.door=true;
   if (WA.state.door) {
       WA.room.showLayer('main_door_open');
       WA.room.hideLayer('main_door_close');
@@ -771,6 +771,7 @@ WA.onInit()
     });
 
     WA.player.state.onVariableChange('actualFlow').subscribe(() => {
+      if(WA.player.state.actualFlow=='null') WA.state.door=false;
       closeWebsite();
       closeMenuPopup();
       displayMainDoor();
