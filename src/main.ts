@@ -18,6 +18,7 @@ let menuPopup: any;
 let webSite: any = undefined;
 let wrongPopup: any = undefined;
 let instructionPopup: any = undefined;
+let narrativePopup: any = undefined;
 let road: { x: number; y: number }[] = [{ x: 0, y: 0 }];
 let projectIdPapy: string;
 let representationPapy: string;
@@ -48,6 +49,28 @@ function closeInstruction() {
   if (instructionPopup !== undefined) {
     instructionPopup.close();
     instructionPopup = undefined;
+  }
+}
+
+function closeNarrative() {
+  if (narrativePopup !== undefined) {
+    narrativePopup.close();
+    narrativePopup = undefined;
+  }
+}
+
+function displayMainDoor() { 
+  if(WA.player.state.actualFlow) WA.state.door=true;
+  if (WA.state.door) {
+      WA.room.showLayer('main_door_open');
+      WA.room.hideLayer('main_door_close');
+      WA.room.hideLayer('collision_main_door');
+      console.log("open")
+  } else {
+      WA.room.hideLayer('main_door_open');
+      WA.room.showLayer('main_door_close');
+      WA.room.showLayer('collision_main_door');
+      console.log("close")
   }
 }
 
@@ -107,7 +130,7 @@ async function narrativeMessage() {
     message: "press 'space' or click here to open the narrative",
     callback: async () => {
       closeInstruction();
-      instructionPopup = WA.ui.openPopup(bannerPosition, narration, [
+      narrativePopup = WA.ui.openPopup(bannerPosition, narration, [
         {
           label: 'Close',
           className: 'normal',
@@ -115,7 +138,7 @@ async function narrativeMessage() {
             // Close the popup when the "Close" button is pressed.
             narrativeMessage();
             triggerMessage.remove();
-            closeInstruction();
+            closeNarrative();
           },
         },
       ]);
@@ -466,13 +489,14 @@ async function startActivity(flowId: string): Promise<any> {
 // Waiting for the API to be ready
 WA.onInit()
   .then(async () => {
+    if(WA.player.name=='Tmao'||WA.player.name=='Antonio Bucchiarone') WA.room.hideLayer('collision_manager_door');
     console.log('Scripting API ready');
     // Flows Menu
     WA.room.website.create({
       name: 'logo',
       url: './images/solo_logo_32.png',
       position: {
-        x: 240,
+        x: 220,
         y: 496,
         width: 64,
         height: 64,
@@ -481,12 +505,12 @@ WA.onInit()
       origin: 'map',
       scale: 1,
     });
-
+    displayMainDoor();
     WA.room.website.create({
       name: 'scritta',
       url: './images/solo_scritta_32.png',
       position: {
-        x: 368,
+        x: 388,
         y: 496,
         width: 418,
         height: 64,
@@ -749,6 +773,7 @@ WA.onInit()
     WA.player.state.onVariableChange('actualFlow').subscribe(() => {
       closeWebsite();
       closeMenuPopup();
+      displayMainDoor();
       menuPopup = WA.ui.openPopup(
         'MenuBanner',
         'Learning path chose correctly, enter the school zone to start ',
