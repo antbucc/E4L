@@ -59,18 +59,19 @@ function closeNarrative() {
   }
 }
 
-function displayMainDoor() { 
-  if(WA.player.state.actualFlow && WA.player.state.actualFlow!='null') WA.state.door=true;
+function displayMainDoor() {
+  if (WA.player.state.actualFlow && WA.player.state.actualFlow != 'null')
+    WA.state.door = true;
   if (WA.state.door) {
-      WA.room.showLayer('main_door_open');
-      WA.room.hideLayer('main_door_close');
-      WA.room.hideLayer('collision_main_door');
-      console.log("open")
+    WA.room.showLayer('main_door_open');
+    WA.room.hideLayer('main_door_close');
+    WA.room.hideLayer('collision_main_door');
+    console.log('open');
   } else {
-      WA.room.hideLayer('main_door_open');
-      WA.room.showLayer('main_door_close');
-      WA.room.showLayer('collision_main_door');
-      console.log("close")
+    WA.room.hideLayer('main_door_open');
+    WA.room.showLayer('main_door_close');
+    WA.room.showLayer('collision_main_door');
+    console.log('close');
   }
 }
 
@@ -489,7 +490,8 @@ async function startActivity(flowId: string): Promise<any> {
 // Waiting for the API to be ready
 WA.onInit()
   .then(async () => {
-    if(WA.player.name=='Tmao'||WA.player.name=='Antonio Bucchiarone') WA.room.hideLayer('collision_manager_door');
+    if (WA.player.name == 'Tmao' || WA.player.name == 'Antonio Bucchiarone')
+      WA.room.hideLayer('collision_manager_door');
     console.log('Scripting API ready');
     // Flows Menu
     WA.room.website.create({
@@ -758,7 +760,6 @@ WA.onInit()
             );
           },
         });
-        
       } catch (error) {
         console.log(error);
       }
@@ -771,7 +772,7 @@ WA.onInit()
     });
 
     WA.player.state.onVariableChange('actualFlow').subscribe(() => {
-      if(WA.player.state.actualFlow=='null') WA.state.door=false;
+      if (WA.player.state.actualFlow == 'null') WA.state.door = false;
       closeWebsite();
       closeMenuPopup();
       displayMainDoor();
