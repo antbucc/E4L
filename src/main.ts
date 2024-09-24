@@ -368,16 +368,17 @@ async function getActualActivity(playerPlatform: string) {
                 (points.Grade as string).substring(0, index)
               );
               console.log(grade);
-              await levelUp('UMLKey', grade * 10)
+              await levelUp('demo2024event', grade * 10)
                 .then(async (response: LevelUpResponse) => {
+                  console.log(response);
                   if (response.awardedBadges != null)
                     await levelUp(
                       'generalKey',
-                      keyMapping.find((map) => map.key == 'UMLKey')
+                      keyMapping.find((map) => map.key == 'demo2024event')
                         ?.generalPoints ?? 0
                     );
                 })
-                .catch((e) => console.log(e)); //add points
+                .catch((e) => console.log(e));
             } else {
               try {
                 await levelUp(
@@ -395,7 +396,7 @@ async function getActualActivity(playerPlatform: string) {
                         )?.generalPoints ?? 0
                       );
                   })
-                  .catch((e) => console.log(e)); //add points
+                  .catch((e) => console.log(e));
               } catch (error) {
                 console.log(error);
               }
