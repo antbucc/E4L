@@ -36,7 +36,7 @@ export const keyMapping = [
   { key: 'keyLP', cases: ['learningPath'], generalPoints: 100 },
   { key: 'codingKey', cases: ['VSCode'], generalPoints: 100 },
   { key: 'collaborativeKey', cases: ['Eraser'], generalPoints: 100 },
-  { key: 'UMLKey', cases: ['PapyrusWeb'], generalPoints: 100 },
+  { key: 'demo2024event', cases: ['PapyrusWeb'], generalPoints: 100 },
   { key: 'knowledgeKey', cases: ['WebApp'], generalPoints: 100 },
   { key: 'generalKey', cases: [], generalPoints: 100 },
 ];

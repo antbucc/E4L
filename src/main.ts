@@ -18,6 +18,7 @@ let menuPopup: any;
 let webSite: any = undefined;
 let wrongPopup: any = undefined;
 let instructionPopup: any = undefined;
+let narrativePopup: any = undefined;
 let road: { x: number; y: number }[] = [{ x: 0, y: 0 }];
 let projectIdPapy: string;
 let representationPapy: string;
@@ -48,6 +49,29 @@ function closeInstruction() {
   if (instructionPopup !== undefined) {
     instructionPopup.close();
     instructionPopup = undefined;
+  }
+}
+
+function closeNarrative() {
+  if (narrativePopup !== undefined) {
+    narrativePopup.close();
+    narrativePopup = undefined;
+  }
+}
+
+function displayMainDoor() {
+  if (WA.player.state.actualFlow && WA.player.state.actualFlow != 'null')
+    WA.state.door = true;
+  if (WA.state.door) {
+    WA.room.showLayer('main_door_open');
+    WA.room.hideLayer('main_door_close');
+    WA.room.hideLayer('collision_main_door');
+    console.log('open');
+  } else {
+    WA.room.hideLayer('main_door_open');
+    WA.room.showLayer('main_door_close');
+    WA.room.showLayer('collision_main_door');
+    console.log('close');
   }
 }
 
@@ -107,7 +131,7 @@ async function narrativeMessage() {
     message: "press 'space' or click here to open the narrative",
     callback: async () => {
       closeInstruction();
-      instructionPopup = WA.ui.openPopup(bannerPosition, narration, [
+      narrativePopup = WA.ui.openPopup(bannerPosition, narration, [
         {
           label: 'Close',
           className: 'normal',
@@ -115,7 +139,7 @@ async function narrativeMessage() {
             // Close the popup when the "Close" button is pressed.
             narrativeMessage();
             triggerMessage.remove();
-            closeInstruction();
+            closeNarrative();
           },
         },
       ]);
@@ -344,16 +368,17 @@ async function getActualActivity(playerPlatform: string) {
                 (points.Grade as string).substring(0, index)
               );
               console.log(grade);
-              await levelUp('UMLKey', grade * 10)
+              await levelUp('demo2024event', grade * 10)
                 .then(async (response: LevelUpResponse) => {
+                  console.log(response);
                   if (response.awardedBadges != null)
                     await levelUp(
                       'generalKey',
-                      keyMapping.find((map) => map.key == 'UMLKey')
+                      keyMapping.find((map) => map.key == 'demo2024event')
                         ?.generalPoints ?? 0
                     );
                 })
-                .catch((e) => console.log(e)); //add points
+                .catch((e) => console.log(e));
             } else {
               try {
                 await levelUp(
@@ -371,7 +396,7 @@ async function getActualActivity(playerPlatform: string) {
                         )?.generalPoints ?? 0
                       );
                   })
-                  .catch((e) => console.log(e)); //add points
+                  .catch((e) => console.log(e));
               } catch (error) {
                 console.log(error);
               }
@@ -466,13 +491,15 @@ async function startActivity(flowId: string): Promise<any> {
 // Waiting for the API to be ready
 WA.onInit()
   .then(async () => {
+    if (WA.player.name == 'Tmao' || WA.player.name == 'Antonio Bucchiarone')
+      WA.room.hideLayer('collision_manager_door');
     console.log('Scripting API ready');
     // Flows Menu
     WA.room.website.create({
       name: 'logo',
       url: './images/solo_logo_32.png',
       position: {
-        x: 240,
+        x: 220,
         y: 496,
         width: 64,
         height: 64,
@@ -481,12 +508,12 @@ WA.onInit()
       origin: 'map',
       scale: 1,
     });
-
+    displayMainDoor();
     WA.room.website.create({
       name: 'scritta',
       url: './images/solo_scritta_32.png',
       position: {
-        x: 368,
+        x: 388,
         y: 496,
         width: 418,
         height: 64,
@@ -572,7 +599,7 @@ WA.onInit()
     WA.room.area.onEnter('FlowsMenu').subscribe(async () => {
       try {
         console.log('testing FlowsMenu');
-        menuPopup = WA.ui.openPopup(
+        menuPopup = await WA.ui.openPopup(
           'MenuBanner',
           'Here you can choose which learning path you want to do, access the console to see the possibilities',
           [
@@ -589,7 +616,7 @@ WA.onInit()
         setTimeout(function () {
           closeMenuPopup();
         }, 3000);
-
+        closeWebsite();
         webSite = await WA.nav.openCoWebSite(
           //@ts-ignore
           import.meta.env.VITE_WEBAPP_URL + '/flowMenu',
@@ -629,6 +656,7 @@ WA.onInit()
           closeMenuPopup();
         }, 3000);
 
+        closeWebsite();
         webSite = await WA.nav.openCoWebSite(
           //@ts-ignore
           import.meta.env.VITE_FRONTEND_URL + '/waEducator',
@@ -669,6 +697,7 @@ WA.onInit()
         setTimeout(function () {
           closePopup();
         }, 3000);
+        closeWebsite();
 
         webSite = await WA.nav.openCoWebSite(
           //@ts-ignore
@@ -723,6 +752,7 @@ WA.onInit()
           message:
             "press 'space' or click here to open the instruction WebPage",
           callback: async () => {
+            closeWebsite();
             webSite = await WA.nav.openCoWebSite(
               //@ts-ignore
               import.meta.env.VITE_WEBAPP_URL +
@@ -746,8 +776,10 @@ WA.onInit()
     });
 
     WA.player.state.onVariableChange('actualFlow').subscribe(() => {
+      if (WA.player.state.actualFlow == 'null') WA.state.door = false;
       closeWebsite();
       closeMenuPopup();
+      displayMainDoor();
       menuPopup = WA.ui.openPopup(
         'MenuBanner',
         'Learning path chose correctly, enter the school zone to start ',
@@ -790,6 +822,8 @@ WA.onInit()
         const URL =
           //@ts-ignore
           import.meta.env.VITE_WEBAPP_URL + '/tools/' + ctx;
+
+        closeWebsite();
         webSite = await WA.nav.openCoWebSite(URL, true);
         console.log(URL);
         //open a timed popup to send the user to the right location
@@ -845,6 +879,7 @@ WA.onInit()
               projectIdPapy = response.data.project_id;
               representationPapy = response.data.representation_id;
 
+              closeWebsite();
               webSite = await WA.nav.openCoWebSite(
                 'https://papygame.tech/projects/' +
                   projectIdPapy +
@@ -859,11 +894,13 @@ WA.onInit()
               console.log(error);
               throw new Error(`HTTP error! Status: ${error.response.status}`);
             });
-        } else if (actualActivity.platform == 'Collaborative')
+        } else if (actualActivity.platform == 'Collaborative') {
+          closeWebsite();
           webSite = await WA.nav.openCoWebSite(
             'https://app.eraser.io/workspace/JVoolrO5JJucnQkr1tK7?origin=share',
             true
           );
+        }
       } catch (error) {
         // Handle errors if the API call fails
         console.error('Failed to get API response:', error);
