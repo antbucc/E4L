@@ -599,7 +599,7 @@ WA.onInit()
     WA.room.area.onEnter('FlowsMenu').subscribe(async () => {
       try {
         console.log('testing FlowsMenu');
-        menuPopup = WA.ui.openPopup(
+        menuPopup = await WA.ui.openPopup(
           'MenuBanner',
           'Here you can choose which learning path you want to do, access the console to see the possibilities',
           [
@@ -616,7 +616,7 @@ WA.onInit()
         setTimeout(function () {
           closeMenuPopup();
         }, 3000);
-
+        closeWebsite();
         webSite = await WA.nav.openCoWebSite(
           //@ts-ignore
           import.meta.env.VITE_WEBAPP_URL + '/flowMenu',
@@ -656,6 +656,7 @@ WA.onInit()
           closeMenuPopup();
         }, 3000);
 
+        closeWebsite();
         webSite = await WA.nav.openCoWebSite(
           //@ts-ignore
           import.meta.env.VITE_FRONTEND_URL + '/waEducator',
@@ -696,6 +697,7 @@ WA.onInit()
         setTimeout(function () {
           closePopup();
         }, 3000);
+        closeWebsite();
 
         webSite = await WA.nav.openCoWebSite(
           //@ts-ignore
@@ -750,6 +752,7 @@ WA.onInit()
           message:
             "press 'space' or click here to open the instruction WebPage",
           callback: async () => {
+            closeWebsite();
             webSite = await WA.nav.openCoWebSite(
               //@ts-ignore
               import.meta.env.VITE_WEBAPP_URL +
@@ -819,6 +822,8 @@ WA.onInit()
         const URL =
           //@ts-ignore
           import.meta.env.VITE_WEBAPP_URL + '/tools/' + ctx;
+
+        closeWebsite();
         webSite = await WA.nav.openCoWebSite(URL, true);
         console.log(URL);
         //open a timed popup to send the user to the right location
@@ -874,6 +879,7 @@ WA.onInit()
               projectIdPapy = response.data.project_id;
               representationPapy = response.data.representation_id;
 
+              closeWebsite();
               webSite = await WA.nav.openCoWebSite(
                 'https://papygame.tech/projects/' +
                   projectIdPapy +
@@ -888,11 +894,11 @@ WA.onInit()
               console.log(error);
               throw new Error(`HTTP error! Status: ${error.response.status}`);
             });
-        } else if (actualActivity.platform == 'Collaborative')
-          webSite = await WA.nav.openCoWebSite(
-            'https://app.eraser.io/workspace/JVoolrO5JJucnQkr1tK7?origin=share',
-            true
-          );
+        } else if (actualActivity.platform == 'Collaborative') closeWebsite();
+        webSite = await WA.nav.openCoWebSite(
+          'https://app.eraser.io/workspace/JVoolrO5JJucnQkr1tK7?origin=share',
+          true
+        );
       } catch (error) {
         // Handle errors if the API call fails
         console.error('Failed to get API response:', error);
