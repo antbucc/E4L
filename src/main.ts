@@ -18,7 +18,7 @@ let menuPopup: any;
 let webSite: any = undefined;
 let wrongPopup: any = undefined;
 let instructionPopup: any = undefined;
-let narrativePopup: any = undefined;
+//let narrativePopup: any = undefined;
 let road: { x: number; y: number }[] = [{ x: 0, y: 0 }];
 let projectIdPapy: string;
 let representationPapy: string;
@@ -51,13 +51,13 @@ function closeInstruction() {
     instructionPopup = undefined;
   }
 }
-
+/*
 function closeNarrative() {
   if (narrativePopup !== undefined) {
     narrativePopup.close();
     narrativePopup = undefined;
   }
-}
+}*/
 
 function displayMainDoor() {
   if (WA.player.state.actualFlow && WA.player.state.actualFlow != 'null')
@@ -96,61 +96,61 @@ function wrongAreaFunction(where: string, activity: string) {
   }, 3000);
 }
 
-async function narrativeMessage() {
-  /*
-  let tiledMap = await WA.room.getTiledMap();
-  
-  // Add the new layer to the map
-  tiledMap.layers.push({
-    name: "bannerNarrative",
-    width: 50, 
-    height: 50, 
-    y: 80,
-    visible: true,
-    opacity: 1,
-    properties: [],
-    type: 'tilelayer'
+//async function narrativeMessage() {
+    /*
+    let tiledMap = await WA.room.getTiledMap();
+    
+    // Add the new layer to the map
+    tiledMap.layers.push({
+      name: "bannerNarrative",
+      width: 50, 
+      height: 50, 
+      y: 80,
+      visible: true,
+      opacity: 1,
+      properties: [],
+      type: 'tilelayer'
+    });
+    await WA.room.area.create({
+      name: "bannerNarrative", 
+      x: 10,      // X position
+      y: 10,      // Y position
+      width: 10,  // Width size
+      height: 10, // Height size
   });
-  await WA.room.area.create({
-    name: "bannerNarrative", 
-    x: 10,      // X position
-    y: 10,      // Y position
-    width: 10,  // Width size
-    height: 10, // Height size
-});
-*/
-  const playerPos = await WA.player.getPosition();
-  console.log(playerPos.y);
-  const bannerPosition =
-    playerPos.y > 300 ? 'bannerNarrative2' : 'bannerNarrative1';
-
-  let narration =
-    "The city of Technopolis is falling apart. Its digital infrastructure, once the envy of the world, is now in chaos due to a centuries-old, corrupted system architecture. As an appointed Architect of Code, your task is to restore stability. But this mission is not yours alone—there are others, racing against you to solve Technopolis' problems and earn the title of Grand Architect. \nYou'll traverse a sprawling digital city using a 2D map to navigate through different rooms where critical missions await. Every room contains learning challenges related to UML Modeling and in particular Class diagrams. Along the way, you'll collect points, badges, and level up, but only the top three learners will appear on the final Leaderboard, earning the ultimate rewards.";
-  if (actualActivity) narration = actualActivity.description;
-  triggerMessage = WA.ui.displayActionMessage({
-    message: "press 'space' or click here to open the narrative",
-    callback: async () => {
-      closeInstruction();
-      narrativePopup = WA.ui.openPopup(bannerPosition, narration, [
-        {
-          label: 'Close',
-          className: 'normal',
-          callback: () => {
-            // Close the popup when the "Close" button is pressed.
-            narrativeMessage();
-            triggerMessage.remove();
-            closeNarrative();
-          },
-        },
-      ]);
-      setTimeout(function () {
-        closeInstruction();
-        narrativeMessage();
-        triggerMessage.remove();
-      }, 8000);
-    },
-  });
-}
+  */
+//  const playerPos = await WA.player.getPosition();
+//  console.log(playerPos.y);
+//  const bannerPosition =
+//    playerPos.y > 300 ? 'bannerNarrative2' : 'bannerNarrative1';
+//
+//  let narration =
+//    "The city of Technopolis is falling apart. Its digital infrastructure, once the envy of the world, is now in chaos due to a centuries-old, corrupted system architecture. As an appointed Architect of Code, your task is to restore stability. But this mission is not yours alone—there are others, racing against you to solve Technopolis' problems and earn the title of Grand Architect. \nYou'll traverse a sprawling digital city using a 2D map to navigate through different rooms where critical missions await. Every room contains learning challenges related to UML Modeling and in particular Class diagrams. Along the way, you'll collect points, badges, and level up, but only the top three learners will appear on the final Leaderboard, earning the ultimate rewards.";
+//  if (actualActivity) narration = actualActivity.description;
+//  triggerMessage = WA.ui.displayActionMessage({
+//    message: "press 'space' or click here to open the narrative",
+//    callback: async () => {
+//      closeInstruction();
+//      narrativePopup = WA.ui.openPopup(bannerPosition, narration, [
+//        {
+//          label: 'Close',
+//          className: 'normal',
+//          callback: () => {
+//            // Close the popup when the "Close" button is pressed.
+//            //narrativeMessage();
+//            triggerMessage.remove();
+//            closeNarrative();
+//          },
+//        },
+//      ]);
+//      setTimeout(function () {
+//        closeInstruction();
+//        //narrativeMessage();
+//        triggerMessage.remove();
+//      }, 8000);
+//    },
+//  });
+//}
 
 const mappingActivity = [
   {
@@ -522,7 +522,7 @@ WA.onInit()
       origin: 'map',
       scale: 1,
     });
-    narrativeMessage();
+    //narrativeMessage();
     WA.room.area.onLeave('Outside').subscribe(async () => {
       nextPos = { x: 0, y: 0 };
       let toCancel;
@@ -771,7 +771,7 @@ WA.onInit()
 
     WA.room.area.onLeave('instructions').subscribe(async () => {
       triggerMessage.remove();
-      narrativeMessage();
+      //narrativeMessage();
       closeWebsite();
     });
 
