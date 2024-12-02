@@ -97,7 +97,7 @@ function wrongAreaFunction(where: string, activity: string) {
 }
 
 //async function narrativeMessage() {
-    /*
+/*
     let tiledMap = await WA.room.getTiledMap();
     
     // Add the new layer to the map
@@ -139,7 +139,7 @@ function wrongAreaFunction(where: string, activity: string) {
 //            // Close the popup when the "Close" button is pressed.
 //            //narrativeMessage();
 //              try {
-//                
+//
 //                triggerMessage.remove();
 //                } catch (error) {
 //                  console.log(error);
@@ -152,7 +152,7 @@ function wrongAreaFunction(where: string, activity: string) {
 //        closeInstruction();
 //        //narrativeMessage();
 //          try {
-//        
+//
 //        triggerMessage.remove();
 //        } catch (error) {
 //          console.log(error);
@@ -425,6 +425,13 @@ async function getActualActivity(playerPlatform: string) {
           WA.player.state.actualFlow = '';
           ctx = undefined;
         }
+        if (actualActivity.platform == 'PapyrusWeb') {
+          WA.room.showLayer('PapyrusWebIcon');
+          WA.room.hideLayer('CollaborativeIcon');
+        } else {
+          WA.room.showLayer('CollaborativeIcon');
+          WA.room.hideLayer('PapyrusWebIcon');
+        }
       })
       .catch(async (error: any) => {
         console.log(error);
@@ -504,6 +511,8 @@ WA.onInit()
     if (WA.player.name == 'Tmao' || WA.player.name == 'Antonio Bucchiarone')
       WA.room.hideLayer('collision_manager_door');
     console.log('Scripting API ready');
+    WA.room.showLayer('PapyrusWebIcon');
+    WA.room.hideLayer('CollaborativeIcon');
     // Flows Menu
     WA.room.website.create({
       name: 'logo',
@@ -731,8 +740,7 @@ WA.onInit()
     WA.room.area.onEnter('instructions').subscribe(() => {
       try {
         try {
-          
-        triggerMessage.remove();
+          triggerMessage.remove();
         } catch (error) {
           console.log(error);
         }
@@ -786,8 +794,7 @@ WA.onInit()
 
     WA.room.area.onLeave('instructions').subscribe(async () => {
       try {
-        
-      triggerMessage.remove();
+        triggerMessage.remove();
       } catch (error) {
         console.log(error);
       }
@@ -914,7 +921,10 @@ WA.onInit()
               console.log(error);
               throw new Error(`HTTP error! Status: ${error.response.status}`);
             });
-        } else if (actualActivity.platform == 'Collaborative'||actualActivity.platform == 'Eraser') {
+        } else if (
+          actualActivity.platform == 'Collaborative' ||
+          actualActivity.platform == 'Eraser'
+        ) {
           closeWebsite();
           webSite = await WA.nav.openCoWebSite(
             'https://app.eraser.io/workspace/JVoolrO5JJucnQkr1tK7?origin=share',
@@ -1022,8 +1032,7 @@ WA.onInit()
 
     WA.room.area.onLeave('cleaningArea').subscribe(async () => {
       try {
-        
-      triggerMessage.remove();
+        triggerMessage.remove();
       } catch (error) {
         console.log(error);
       }
