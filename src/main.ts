@@ -138,7 +138,12 @@ function wrongAreaFunction(where: string, activity: string) {
 //          callback: () => {
 //            // Close the popup when the "Close" button is pressed.
 //            //narrativeMessage();
-//            triggerMessage.remove();
+//              try {
+//                
+//                triggerMessage.remove();
+//                } catch (error) {
+//                  console.log(error);
+//                }
 //            closeNarrative();
 //          },
 //        },
@@ -146,7 +151,12 @@ function wrongAreaFunction(where: string, activity: string) {
 //      setTimeout(function () {
 //        closeInstruction();
 //        //narrativeMessage();
+//          try {
+//        
 //        triggerMessage.remove();
+//        } catch (error) {
+//          console.log(error);
+//        }
 //      }, 8000);
 //    },
 //  });
@@ -720,7 +730,12 @@ WA.onInit()
 
     WA.room.area.onEnter('instructions').subscribe(() => {
       try {
+        try {
+          
         triggerMessage.remove();
+        } catch (error) {
+          console.log(error);
+        }
         if (!WA.player.state.actualFlow) {
           triggerMessage = WA.ui.displayActionMessage({
             message:
@@ -770,7 +785,12 @@ WA.onInit()
     });
 
     WA.room.area.onLeave('instructions').subscribe(async () => {
+      try {
+        
       triggerMessage.remove();
+      } catch (error) {
+        console.log(error);
+      }
       //narrativeMessage();
       closeWebsite();
     });
@@ -1001,7 +1021,12 @@ WA.onInit()
     });
 
     WA.room.area.onLeave('cleaningArea').subscribe(async () => {
+      try {
+        
       triggerMessage.remove();
+      } catch (error) {
+        console.log(error);
+      }
       closeWebsite();
     });
 
