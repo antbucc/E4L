@@ -894,7 +894,7 @@ WA.onInit()
               console.log(error);
               throw new Error(`HTTP error! Status: ${error.response.status}`);
             });
-        } else if (actualActivity.platform == 'Collaborative') {
+        } else if (actualActivity.platform == 'Collaborative'||actualActivity.platform == 'Eraser') {
           closeWebsite();
           webSite = await WA.nav.openCoWebSite(
             'https://app.eraser.io/workspace/JVoolrO5JJucnQkr1tK7?origin=share',
