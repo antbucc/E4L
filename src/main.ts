@@ -925,6 +925,21 @@ WA.onInit()
           actualActivity.platform == 'Collaborative' ||
           actualActivity.platform == 'Eraser'
         ) {
+          console.log(actualActivity.data);
+          const collaborativeAssignemt = WA.ui.openPopup(
+            'BannerCollaborative',
+            actualActivity.data.assignment||'Draw some comments and suggestions =D',
+            [
+              {
+                label: 'Close',
+                className: 'normal',
+                callback: () => {
+                  // Close the popup when the "Close" button is pressed.
+                  collaborativeAssignemt.close();
+                },
+              },
+            ]
+          );
           closeWebsite();
           webSite = await WA.nav.openCoWebSite(
             'https://app.eraser.io/workspace/JVoolrO5JJucnQkr1tK7?origin=share',

@@ -770,13 +770,13 @@
                 {
                  "height":60,
                  "id":29,
-                 "name":"BannerA4",
+                 "name":"BannerCollaborative",
                  "rotation":0,
                  "type":"",
                  "visible":true,
                  "width":209.333333333333,
-                 "x":257.666666666667,
-                 "y":68
+                 "x":364.5,
+                 "y":77.6666666666667
                 }, 
                 {
                  "height":80,
@@ -935,6 +935,17 @@
                  "width":0,
                  "x":278.25,
                  "y":473.25
+                }, 
+                {
+                 "height":60,
+                 "id":53,
+                 "name":"BannerA4",
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":209.333,
+                 "x":311.3335,
+                 "y":64.6666666666667
                 }],
          "opacity":1,
          "properties":[
@@ -964,7 +975,7 @@
                  "value":true
                 }],
          "type":"objectgroup",
-         "visible":false,
+         "visible":true,
          "x":0,
          "y":0
         }, 
@@ -1075,7 +1086,7 @@
          "y":0
         }],
  "nextlayerid":80,
- "nextobjectid":53,
+ "nextobjectid":54,
  "orientation":"orthogonal",
  "properties":[
         {
