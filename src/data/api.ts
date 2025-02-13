@@ -5,8 +5,7 @@ export type UserFlowBody = {
   flowId: string;
 };
 export type NextBody = {
-  userId: string;
-  flowId: string;
+  ctxId: string;
   satisfiedConditions: string[];
 };
 

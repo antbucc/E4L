@@ -364,6 +364,16 @@ async function getActualActivity(playerPlatform: string) {
       .then(async (response) => {
         console.log((response.data as PolyglotNodeValidation).platform);
 
+        const keyEvent =
+          WA.player.state.actualFlow == '6c7867a1-389e-4df6-b1d8-68250ee4cacb'
+            ? 'challenge45Aquila2025'
+            : 'challenge23Aquila2025';
+        if (
+          WA.player.state.actualFlow ==
+            '6c7867a1-389e-4df6-b1d8-68250ee4cacb' ||
+          WA.player.state.actualFlow == '6614ff6b-b7eb-423d-b896-ef994d9af097'
+        )
+          levelUp(keyEvent, 100);
         if (actualActivity)
           if (
             (response.data as PolyglotNodeValidation).platform !=
@@ -928,7 +938,8 @@ WA.onInit()
           console.log(actualActivity.data);
           const collaborativeAssignemt = WA.ui.openPopup(
             'BannerCollaborative',
-            actualActivity.data.assignment||'Draw some comments and suggestions =D',
+            actualActivity.data.assignment ||
+              'Draw some comments and suggestions =D',
             [
               {
                 label: 'Close',
@@ -954,7 +965,22 @@ WA.onInit()
 
     WA.room.area.onLeave('ActivityType3').subscribe(async () => {
       //wrongAreaPopup.close();
-
+      if (
+        (!ctx && actualActivity.platform == 'Collaborative') ||
+        actualActivity.platform == 'Eraser'
+      ) {
+        console.log('exit Eraser');
+        const satisfiedConditions = actualActivity.validation.filter(
+          (validation) => validation.data.conditionKind == 'pass'
+        );
+        const satisfiedConditionsId = satisfiedConditions.map(
+          (item) => item.id
+        );
+        await API.getNextNode({
+          ctxId: ctx || '',
+          satisfiedConditions: satisfiedConditionsId,
+        });
+      }
       nextActivityBannerV2('BannerA3');
       closeWebsite();
     });
