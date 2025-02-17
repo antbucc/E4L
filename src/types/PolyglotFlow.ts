@@ -39,6 +39,8 @@ export const keyMapping = [
   { key: 'demo2024event', cases: ['PapyrusWeb'], generalPoints: 100 },
   { key: 'knowledgeKey', cases: ['WebApp'], generalPoints: 100 },
   { key: 'generalKey', cases: [], generalPoints: 100 },
+  { key: 'challenge45Aquila2025', cases: [], generalPoints: 100 },
+  { key: 'challenge23Aquila2025', cases: [], generalPoints: 100 }
 ];
 
 export type layerType = {
