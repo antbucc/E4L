@@ -364,21 +364,23 @@ async function getActualActivity(playerPlatform: string) {
       .then(async (response) => {
         console.log((response.data as PolyglotNodeValidation).platform);
 
-        const keyEvent =
-          WA.player.state.actualFlow == '6c7867a1-389e-4df6-b1d8-68250ee4cacb'
-            ? 'challenge45Aquila2025'
-            : 'challenge23Aquila2025';
-        if (
-          WA.player.state.actualFlow ==
-            '6c7867a1-389e-4df6-b1d8-68250ee4cacb' ||
-          WA.player.state.actualFlow == '6614ff6b-b7eb-423d-b896-ef994d9af097'
-        )
-          levelUp(keyEvent, 100);
         if (actualActivity)
           if (
             (response.data as PolyglotNodeValidation).platform !=
             actualActivity.platform
           ) {
+            const keyEvent =
+              WA.player.state.actualFlow ==
+              '6c7867a1-389e-4df6-b1d8-68250ee4cacb'
+                ? 'challenge45Aquila2025'
+                : 'challenge23Aquila2025';
+            if (
+              WA.player.state.actualFlow ==
+                '6c7867a1-389e-4df6-b1d8-68250ee4cacb' ||
+              WA.player.state.actualFlow ==
+                '6614ff6b-b7eb-423d-b896-ef994d9af097'
+            )
+              levelUp(keyEvent, 100);
             //LP completed
             if (actualActivity.platform == 'PapyrusWeb' && projectIdPapy) {
               const points = (await API.userPapyPoints(projectIdPapy)).data;
