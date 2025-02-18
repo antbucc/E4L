@@ -576,13 +576,13 @@ WA.onInit()
         closeInstruction();
         if (!WA.player.state.actualFlow) {
           WA.room.setTiles([
-          {
-            x: 3,
-            y: 18,
-            tile: 'arrowBase',
-            layer: 'activity/Type5',
-          },
-        ]);
+            {
+              x: 3,
+              y: 18,
+              tile: 'arrowBase',
+              layer: 'activity/Type5',
+            },
+          ]);
           instructionPopup = WA.ui.openPopup(
             'instructions',
             'You have not selected a Learning Path, please go to the menu area to choose a path.',
@@ -638,13 +638,13 @@ WA.onInit()
     WA.room.area.onEnter('FlowsMenu').subscribe(async () => {
       try {
         WA.room.setTiles([
-        {
-          x: 3,
-          y: 18,
-          tile: null,
-          layer: 'activity/Type5',
-        },
-      ]);
+          {
+            x: 3,
+            y: 18,
+            tile: null,
+            layer: 'activity/Type5',
+          },
+        ]);
         console.log('testing FlowsMenu');
         menuPopup = await WA.ui.openPopup(
           'MenuBanner',
@@ -837,7 +837,9 @@ WA.onInit()
       displayMainDoor();
       menuPopup = WA.ui.openPopup(
         'MenuBanner',
-        'Path successfully chosen — enter the school zone to begin',
+        WA.player.state.actualFlow
+          ? 'Path successfully chosen — enter the school zone to begin'
+          : 'Path selection removed, enjoy your staying and come back whenever you want to start a new journey.',
         [
           {
             label: 'Close',
