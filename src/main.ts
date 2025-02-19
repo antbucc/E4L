@@ -196,6 +196,26 @@ async function nextActivityBannerV2(areaPopup: string) {
   if (actualActivity) platform = actualActivity.platform;
   await getActualActivity(platform);
   closePopup();
+  if (WA.player.state.actualFlow == '') {
+    wrongPopup = WA.ui.openPopup(
+      areaPopup,
+      'You have no more activities to execute, go to the main console at the start of the map to choose a new Learning Path.',
+      [
+        {
+          label: 'Close',
+          className: 'normal',
+          callback: () => {
+            // Close the popup when the "Close" button is pressed.
+            closePopup();
+          },
+        },
+      ]
+    );
+    setTimeout(function () {
+      closePopup();
+    }, 3000);
+    return;
+  }
   wrongPopup = WA.ui.openPopup(
     areaPopup,
     'Your next activity is in "' +
@@ -433,7 +453,16 @@ async function getActualActivity(playerPlatform: string) {
         ) {
           //LP completed
           console.log('LP point given');
-          await levelUp('keyLP', 100).catch((e) => console.log(e));
+          const keyEvent =
+            WA.player.state.actualFlow == '6c7867a1-389e-4df6-b1d8-68250ee4cacb'
+              ? 'challenge45Aquila2025'
+              : 'challenge23Aquila2025';
+          if (
+            WA.player.state.actualFlow ==
+              '6c7867a1-389e-4df6-b1d8-68250ee4cacb' ||
+            WA.player.state.actualFlow == '6614ff6b-b7eb-423d-b896-ef994d9af097'
+          )
+            await levelUp(keyEvent, 100).catch((e) => console.log(e));
           WA.player.state.actualFlow = '';
           ctx = undefined;
         }
