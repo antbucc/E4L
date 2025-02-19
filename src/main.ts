@@ -7,6 +7,7 @@ import { ActionMessage } from '@workadventure/iframe-api-typings';
 import { getQuest, levelUp } from '@workadventure/quests';
 import { keyMapping } from './types/PolyglotFlow';
 import { LevelUpResponse } from '@workadventure/quests/dist/LevelUpResponse';
+import { RemotePlayerInterface } from '@workadventure/iframe-api-typings/front/Api/Iframe/Players/RemotePlayer';
 //import { messagesPopup } from './components/userInteraction';
 
 console.log('Script started successfully');
@@ -311,8 +312,54 @@ async function nextActivityBannerV2(areaPopup: string) {
       }
     } while (again && i < 20);
 }
+let startingMeetingTime: Date;
+
+WA.player.proximityMeeting.onJoin().subscribe(async () => {
+  startingMeetingTime = new Date();
+});
+
+WA.player.proximityMeeting.onLeave().subscribe(async () => {
+  const endMeetingTime = new Date();
+  const milliDiff: number =
+    endMeetingTime.getTime() - startingMeetingTime.getTime();
+
+  const totalPoints = Math.floor(Math.floor(milliDiff / 1000) / 60) * 10;
+  const keyEvent =
+    WA.player.state.actualFlow == '6c7867a1-389e-4df6-b1d8-68250ee4cacb'
+      ? 'challenge45Aquila2025'
+      : 'challenge23Aquila2025';
+  if (
+    WA.player.state.actualFlow == '6c7867a1-389e-4df6-b1d8-68250ee4cacb' ||
+    WA.player.state.actualFlow == '6614ff6b-b7eb-423d-b896-ef994d9af097'
+  )
+    levelUp(keyEvent, totalPoints);
+});
+
+function debounce(func: (...args: any[]) => void, timeout = 2000) {
+  let timer: ReturnType<typeof setTimeout>;
+  return (...args: any[]) => {
+    clearTimeout(timer);
+    timer = setTimeout(() => func(...args), timeout);
+  };
+}
+
+function saveInput() {
+  const keyEvent =
+    WA.player.state.actualFlow == '6c7867a1-389e-4df6-b1d8-68250ee4cacb'
+      ? 'challenge45Aquila2025'
+      : 'challenge23Aquila2025';
+  if (
+    WA.player.state.actualFlow == '6c7867a1-389e-4df6-b1d8-68250ee4cacb' ||
+    WA.player.state.actualFlow == '6614ff6b-b7eb-423d-b896-ef994d9af097'
+  )
+    levelUp(keyEvent, 1);
+}
+
+const processChange = debounce(saveInput, 3000);
 
 WA.player.onPlayerMove(async () => {
+  processChange();
+
   if (nextPos.x == 0) return; //means has no next edge
 
   let toCancel;
