@@ -7,7 +7,6 @@ import { ActionMessage } from '@workadventure/iframe-api-typings';
 import { getQuest, levelUp } from '@workadventure/quests';
 import { keyMapping } from './types/PolyglotFlow';
 import { LevelUpResponse } from '@workadventure/quests/dist/LevelUpResponse';
-import { RemotePlayerInterface } from '@workadventure/iframe-api-typings/front/Api/Iframe/Players/RemotePlayer';
 //import { messagesPopup } from './components/userInteraction';
 
 console.log('Script started successfully');
