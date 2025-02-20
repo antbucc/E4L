@@ -311,6 +311,7 @@ async function nextActivityBannerV2(areaPopup: string) {
       }
     } while (again && i < 20);
 }
+/*
 let startingMeetingTime: Date;
 
 WA.player.proximityMeeting.onJoin().subscribe(async () => {
@@ -333,7 +334,8 @@ WA.player.proximityMeeting.onLeave().subscribe(async () => {
   )
     levelUp(keyEvent, totalPoints);
 });
-
+*/
+/*
 function debounce(func: (...args: any[]) => void, timeout = 2000) {
   let timer: ReturnType<typeof setTimeout>;
   return (...args: any[]) => {
@@ -354,10 +356,10 @@ function saveInput() {
     levelUp(keyEvent, 1);
 }
 
-const processChange = debounce(saveInput, 3000);
+const processChange = debounce(saveInput, 3000);*/
 
 WA.player.onPlayerMove(async () => {
-  processChange();
+  //processChange();
 
   if (nextPos.x == 0) return; //means has no next edge
 
@@ -435,7 +437,7 @@ async function getActualActivity(playerPlatform: string) {
             (response.data as PolyglotNodeValidation).platform !=
             actualActivity.platform
           ) {
-            const keyEvent =
+            /*const keyEvent =
               WA.player.state.actualFlow ==
               '6c7867a1-389e-4df6-b1d8-68250ee4cacb'
                 ? 'challenge45Aquila2025'
@@ -446,7 +448,7 @@ async function getActualActivity(playerPlatform: string) {
               WA.player.state.actualFlow ==
                 '6614ff6b-b7eb-423d-b896-ef994d9af097'
             )
-              levelUp(keyEvent, 100);
+              levelUp(keyEvent, 100);*/
             //LP completed
             if (actualActivity.platform == 'PapyrusWeb' && projectIdPapy) {
               const points = (await API.userPapyPoints(projectIdPapy)).data;
@@ -499,7 +501,7 @@ async function getActualActivity(playerPlatform: string) {
         ) {
           //LP completed
           console.log('LP point given');
-          const keyEvent =
+          /*const keyEvent =
             WA.player.state.actualFlow == '6c7867a1-389e-4df6-b1d8-68250ee4cacb'
               ? 'challenge45Aquila2025'
               : 'challenge23Aquila2025';
@@ -508,7 +510,7 @@ async function getActualActivity(playerPlatform: string) {
               '6c7867a1-389e-4df6-b1d8-68250ee4cacb' ||
             WA.player.state.actualFlow == '6614ff6b-b7eb-423d-b896-ef994d9af097'
           )
-            await levelUp(keyEvent, 100).catch((e) => console.log(e));
+            await levelUp(keyEvent, 100).catch((e) => console.log(e));*/
           WA.player.state.actualFlow = '';
           ctx = undefined;
         }
