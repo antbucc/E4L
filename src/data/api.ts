@@ -1,4 +1,5 @@
 import axiosCreate, { AxiosResponse } from 'axios';
+import { AnalyticsActionBody } from '../types/PolyglotFlow';
 
 export type UserFlowBody = {
   userId: string;
@@ -70,7 +71,7 @@ export const API = {
     return execution.post<{}, AxiosResponse, {}>(`/api/execution/actual`, body);
   },
   //The next API won't be necessary after the implementation of userId-flowId body
-  getFirstNode: (body: FirstBody): Promise<AxiosResponse> => {
+  startExecution: (body: FirstBody): Promise<AxiosResponse> => {
     return execution.post<{}, AxiosResponse, {}>(`/api/execution/first`, body);
   },
   getNextNode: (body: NextCtxBody /*NextBody*/): Promise<AxiosResponse> => {
@@ -86,6 +87,19 @@ export const API = {
   userPapyPoints: (projectId: string): Promise<AxiosResponse> => {
     return papyrusWebAPI.get<{}, AxiosResponse, {}>(
       `/graderResults?project_id=` + projectId
+    );
+  },
+
+  //learning Analysis API
+  getAllActions: (): Promise<AxiosResponse> => {
+    return execution.get<{}, AxiosResponse, {}>(`/api/learningAnalytics/`);
+  },
+  registerAction: (
+    body: AnalyticsActionBody /*NextBody*/
+  ): Promise<AxiosResponse> => {
+    return execution.post<{}, AxiosResponse, {}>(
+      `/api/learningAnalytics/`,
+      body
     );
   },
 };
