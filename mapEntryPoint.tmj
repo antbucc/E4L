@@ -1662,7 +1662,7 @@
                 {
                  "height":90.5,
                  "id":68,
-                 "name":"goToOrg",
+                 "name":"GoToOrg",
                  "rotation":0,
                  "type":"area",
                  "visible":true,

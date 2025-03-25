@@ -4,7 +4,7 @@ import { bootstrapExtra } from '@workadventure/scripting-api-extra';
 import { API } from './data/api';
 import { ActionMessage } from '@workadventure/iframe-api-typings';
 import { getQuest, levelUp } from '@workadventure/quests';
-import { AnalyticsActionBody, keyMapping } from './types/PolyglotFlow';
+import { AnalyticsActionBody, keyMapping, Platform, ZoneId } from './types/PolyglotFlow';
 //import { messagesPopup } from './components/userInteraction';
 
 console.log('Script started successfully');
@@ -542,6 +542,17 @@ WA.onInit()
       suggestionBanner('MenuBanner');
       closeWebsite();
     });
+
+    WA.room.area.onEnter('GoToOrg').subscribe(async () =>{
+      WA.nav.goToRoom("#my-entry-point");//addURL for executionmap
+      registerAnalyticsAction({
+      timestamp: new Date(),
+      userId: '',
+      actionType: '',
+      zoneId: ZoneId.FreeZone,
+      platform: Platform.WorkAdventure,
+      action: undefined
+    });});
 
     WA.room.area.onEnter('activityManager').subscribe(async () => {
       try {
