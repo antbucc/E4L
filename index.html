@@ -16,7 +16,7 @@
           path = path.substr(path, path.length - 'index.html'.length);
         }
         const instanceId = Math.random().toString(36).substring(2, 15);
-        const url = `https://play.workadventu.re/_/${instanceId}/${host}${path}map.tmj`;
+        const url = `https://play.workadventu.re/_/${instanceId}/${host}${path}mapEntryPoint.tmj`;
         document.getElementById('testMapURL').href = url;
         document.getElementById('testMapBtnURL').href = url;
         document.getElementById('testMapURL').innerText = url;
@@ -26,7 +26,7 @@
           '//' +
           window.location.host +
           path +
-          'map.tmj';
+          'mapEntryPoint.tmj';
         document.getElementById('tmjURL').innerText = tmjURL;
 
         const gettingStartedLink =
