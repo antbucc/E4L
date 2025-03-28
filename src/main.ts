@@ -544,7 +544,7 @@ WA.onInit()
     });
 
     WA.room.area.onEnter('GoToOrg').subscribe(async () =>{
-      WA.nav.goToRoom("#my-entry-point");//addURL for executionmap
+      WA.nav.goToRoom("./ExecutionMap");//addURL for executionmap
       registerAnalyticsAction({
       timestamp: new Date(),
       userId: '',
