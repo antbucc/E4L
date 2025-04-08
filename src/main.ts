@@ -412,6 +412,7 @@ function registerAnalyticsAction<T extends AnalyticsActionBody>( //modificare pe
 // Waiting for the API to be ready
 WA.onInit()
   .then(async () => {
+    console.log('player ID: '+WA.player.playerId);
     suggestionBanner('InitBanner');
     WA.room.hideLayer('roof');
     if (WA.player.playerId == 0o1 || WA.player.playerId == 0o0)
@@ -462,7 +463,11 @@ WA.onInit()
       origin: 'map',
       scale: 1,
     });
-    //narrativeMessage();
+    
+    WA.room.area.onLeave('silentZone').subscribe(async () => {
+      suggestionBanner('InitBanner');
+    });
+    
     WA.room.area.onLeave('Outside').subscribe(async () => {
       roadRun = false;
       WA.room.showLayer('roof');
@@ -544,7 +549,7 @@ WA.onInit()
     });
 
     WA.room.area.onEnter('GoToOrg').subscribe(async () =>{
-      WA.nav.goToRoom("./ExecutionMap");//addURL for executionmap
+      WA.nav.goToRoom("https://play.workadventu.re/@/fondazione-bruno-kessler/encore/executionmap");
       registerAnalyticsAction({
       timestamp: new Date(),
       userId: '',
