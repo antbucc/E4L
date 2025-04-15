@@ -413,10 +413,9 @@ function registerAnalyticsAction<T extends AnalyticsActionBody>( //modificare pe
 WA.onInit()
   .then(async () => {
     console.log('player ID: '+WA.player.playerId);
-    suggestionBanner('InitBanner');
     WA.room.hideLayer('roof');
-    if (WA.player.playerId == 0o1 || WA.player.playerId == 0o0)
-      //vedi il nostro playerId-> cerca tmao e bucc
+    if (WA.player.name == 'Tmao' || WA.player.playerId == 0o0)
+      //vedi il nostro playerId-> cerca bucc
       WA.room.hideLayer('collision_manager_door');
     console.log('Scripting API ready');
     WA.room.showLayer('PapyrusWebIcon');
@@ -463,7 +462,7 @@ WA.onInit()
       origin: 'map',
       scale: 1,
     });
-    
+
     WA.room.area.onLeave('silentZone').subscribe(async () => {
       suggestionBanner('InitBanner');
     });
