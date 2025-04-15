@@ -414,7 +414,7 @@ WA.onInit()
   .then(async () => {
     console.log('player ID: '+WA.player.playerId);
     WA.room.hideLayer('roof');
-    if (WA.player.name == 'Tmao' || WA.player.playerId == 0o0)
+    if (WA.player.name == 'Tmao' || WA.player.name == 'antbucc')
       //vedi il nostro playerId-> cerca bucc
       WA.room.hideLayer('collision_manager_door');
     console.log('Scripting API ready');
