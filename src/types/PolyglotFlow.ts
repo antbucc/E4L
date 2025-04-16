@@ -40,7 +40,7 @@ export const keyMapping = [
   { key: 'knowledgeKey', cases: ['WebApp'], generalPoints: 100 },
   { key: 'generalKey', cases: [], generalPoints: 100 },
   { key: 'challenge45Aquila2025', cases: [], generalPoints: 100 },
-  { key: 'challenge23Aquila2025', cases: [], generalPoints: 100 }
+  { key: 'challenge23Aquila2025', cases: [], generalPoints: 100 },
 ];
 
 export type layerType = {
@@ -67,4 +67,43 @@ export type objTile = {
   x: Number;
   y: Number;
   class: string;
+};
+
+export enum Platform {
+  PolyGloT,
+  VirtualStudio,
+  Papyrus,
+  WebApp,
+  WorkAdventure,
+}
+
+export enum ZoneId {
+  FreeZone,
+  OutsideZone,
+  SilentZone,
+  LearningPathSelectionZone,
+  InstructionWebpageZone,
+  WebAppZone,
+  MeetingRoomZone,
+  PolyGlotLearningZone,
+  PolyGlotLearningPathCreationZone,
+  PapyrusWebZone,
+  VirtualStudioZone,
+}
+
+//Action Body
+export type AnalyticsActionBody = {
+  timestamp: Date;
+  userId: string;
+  actionType: string;
+  zoneId: ZoneId;
+  platform: Platform;
+  action: any;
+};
+
+export type GradeAction = AnalyticsActionBody & {
+  action: {
+    flow: string;
+    grade: number;
+  };
 };

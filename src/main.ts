@@ -1,40 +1,79 @@
 /// <reference types="@workadventure/iframe-api-typings" />
 
 import { bootstrapExtra } from '@workadventure/scripting-api-extra';
-import { AxiosResponse } from 'axios';
-import { API, PolyglotNodeValidation } from './data/api';
+import { API } from './data/api';
 import { ActionMessage } from '@workadventure/iframe-api-typings';
 import { getQuest, levelUp } from '@workadventure/quests';
-import { keyMapping } from './types/PolyglotFlow';
-import { LevelUpResponse } from '@workadventure/quests/dist/LevelUpResponse';
+import { AnalyticsActionBody, keyMapping, Platform, ZoneId } from './types/PolyglotFlow';
 //import { messagesPopup } from './components/userInteraction';
 
 console.log('Script started successfully');
 
-let ctx: string | undefined; //to be remove after becoming obsolete, global ctx to keep tracks of this execution
-//let flow: string;
-let actualActivity: PolyglotNodeValidation;
-let menuPopup: any;
 let webSite: any = undefined;
 let wrongPopup: any = undefined;
 let instructionPopup: any = undefined;
 //let narrativePopup: any = undefined;
 let road: { x: number; y: number }[] = [{ x: 0, y: 0 }];
-let projectIdPapy: string;
-let representationPapy: string;
+let roadRun: Boolean = false;
 let triggerMessage: ActionMessage;
+
+const mappingActivity = [
+  {
+    activity: ['FlowsMenu', 'MoveToOrg'],
+    pos: {
+      x: 23,
+      y: 6,
+    },
+    message:
+      'Go to the selection room and access the Select Menus or go take the stairs to enter the execution world.',
+  },
+  {
+    activity: ['Gym'],
+    pos: {
+      x: 23,
+      y: 40,
+    },
+    message: 'Go to the gym and access our training system.',
+  },
+  {
+    activity: ['CreateLP'],
+    pos: {
+      x: 16,
+      y: 40,
+    },
+    message: 'Go to the creative room and create your own learing path.',
+  },
+  {
+    activity: ['Socialize', 'Library'],
+    pos: {
+      x: 13,
+      y: 17,
+    },
+    message:
+      'Meet your friends in the social hub or study in the library while waiting them.',
+  },
+  {
+    activity: ['Leaderboard'],
+    pos: {
+      x: 16,
+      y: 52,
+    },
+    message: "Check the leaderboards, your rivals don't wait you.",
+  },
+  {
+    activity: ['Meeting'],
+    pos: {
+      x: 26,
+      y: 30,
+    },
+    message: 'Come meet us inside the meeting room.',
+  },
+];
 
 function closeWebsite() {
   if (webSite !== undefined) {
     webSite.close();
     webSite = undefined;
-  }
-}
-
-function closeMenuPopup() {
-  if (menuPopup !== undefined) {
-    menuPopup.close();
-    menuPopup = undefined;
   }
 }
 
@@ -75,25 +114,22 @@ function displayMainDoor() {
   }
 }
 
-function wrongAreaFunction(where: string, activity: string) {
-  closePopup();
-  wrongPopup = WA.ui.openPopup(
-    where,
-    'Wrong area, here you are able to make activity connected to ' + activity,
-    [
-      {
-        label: 'Close',
-        className: 'normal',
-        callback: () => {
-          // Close the popup when the "Close" button is pressed.
-          closePopup();
+function clearRoad() {
+  //refactor: si potrebbe fare in modo che al posto di cancellarli tutti cancella solo il primo creato (più vicino al player) e ne aggiunge uno in fondo
+  //=> codice più veloce e leggero in runtime
+  let toCancel;
+  do {
+    toCancel = road.pop();
+    if (toCancel)
+      WA.room.setTiles([
+        {
+          x: toCancel.x,
+          y: toCancel.y,
+          tile: null,
+          layer: 'arrows/Type2',
         },
-      },
-    ]
-  );
-  setTimeout(function () {
-    closePopup();
-  }, 3000);
+      ]);
+  } while (toCancel);
 }
 
 //async function narrativeMessage() {
@@ -162,93 +198,56 @@ function wrongAreaFunction(where: string, activity: string) {
 //  });
 //}
 
-const mappingActivity = [
-  {
-    platform: ['VSCode'],
-    activityType: 4,
-    pos: {
-      x: 12,
-      y: 6,
-    },
-  },
-  {
-    platform: ['WebApp'],
-    activityType: 1,
-    pos: {
-      x: 25,
-      y: 5,
-    },
-  },
-  {
-    platform: ['Eraser', 'PapyrusWeb'],
-    activityType: 3,
-    pos: {
-      x: 17,
-      y: 4,
-    },
-  },
-];
-
 let nextPos = { x: 0, y: 0 };
 
-async function nextActivityBannerV2(areaPopup: string) {
-  let platform = '';
-  if (actualActivity) platform = actualActivity.platform;
-  await getActualActivity(platform);
+async function suggestionBanner(areaPopup: string) {
+  //refactor banner for entryPoint map
   closePopup();
-  wrongPopup = WA.ui.openPopup(
-    areaPopup,
-    'Your next activity is in "' +
-      actualActivity.platform +
-      '", go to the correct area.',
-    [
-      {
-        label: 'Close',
-        className: 'normal',
-        callback: () => {
-          // Close the popup when the "Close" button is pressed.
-          closePopup();
+  roadRun = true;
+  const playerSuggestion =
+    (WA.player.state.suggestion as string) || 'FlowsMenu';
+  let message;
+
+  mappingActivity.map((map) => {
+    if (map.activity.includes(playerSuggestion)) {
+      nextPos = { x: map.pos.x, y: map.pos.y + 2 };
+      WA.room.setTiles([
+        {
+          x: map.pos.x,
+          y: map.pos.y,
+          tile: 'arrowBase',
+          layer: 'arrows/Type1',
         },
+      ]);
+      message = map.message;
+    }
+  });
+  if (areaPopup == 'InitBanner') message = 'Welcome in our World.\n' + message;
+  wrongPopup = WA.ui.openPopup(areaPopup, message || 'Error Text', [
+    {
+      label: 'Close',
+      className: 'normal',
+      callback: () => {
+        // Close the popup when the "Close" button is pressed.
+        closePopup();
       },
-    ]
-  );
+    },
+  ]);
   setTimeout(function () {
     closePopup();
   }, 3000);
-  mappingActivity.map((map) => {
-    if (map.platform.includes(actualActivity.platform))
-      nextPos = { x: map.pos.x, y: map.pos.y + 2 };
-    WA.room.setTiles([
-      {
-        x: map.pos.x,
-        y: map.pos.y,
-        tile: map.platform.includes(actualActivity.platform)
-          ? 'arrowBase'
-          : null,
-        layer: 'activity/Type5',
-      },
-    ]);
-  });
+
+  if (!roadRun) return;
 
   let actualPos = await WA.player.getPosition();
 
-  let toCancel;
-  do {
-    toCancel = road.pop();
-    if (toCancel)
-      WA.room.setTiles([
-        {
-          x: toCancel.x,
-          y: toCancel.y,
-          tile: null,
-          layer: 'activity/Type5',
-        },
-      ]);
-  } while (toCancel);
+  clearRoad();
+  roadRun = true;
   actualPos = {
     x: Math.floor(actualPos.x / 33),
     y: Math.floor(actualPos.y / 33),
   };
+
   let i = 0; //debugger
   let again;
   if (nextPos.x != 0)
@@ -262,14 +261,14 @@ async function nextActivityBannerV2(areaPopup: string) {
 
       if (Math.abs(actualPos.y - nextPos.y) > 1) {
         const tilePosX = actualPos.x;
-        const tilePosY = actualPos.y + (actualPos.y < nextPos.y ? 2 : -2);
+        const tilePosY = actualPos.y + (actualPos.y < nextPos.y ? 2 : -2) + 1;
 
         WA.room.setTiles([
           {
             x: tilePosX,
             y: tilePosY,
             tile: 'pointerBase',
-            layer: 'activity/Type5',
+            layer: 'arrows/Type2',
           },
         ]);
         road.push({ x: tilePosX, y: tilePosY });
@@ -283,7 +282,7 @@ async function nextActivityBannerV2(areaPopup: string) {
             x: tilePosX,
             y: tilePosY,
             tile: 'pointerBase',
-            layer: 'activity/Type5',
+            layer: 'arrows/Type2',
           },
         ]);
         road.push({ x: tilePosX, y: tilePosY });
@@ -293,26 +292,16 @@ async function nextActivityBannerV2(areaPopup: string) {
 }
 
 WA.player.onPlayerMove(async () => {
-  if (nextPos.x == 0) return; //means has no next edge
+  //processChange();
 
-  let toCancel;
-  do {
-    toCancel = road.pop();
-    if (toCancel)
-      WA.room.setTiles([
-        {
-          x: toCancel.x,
-          y: toCancel.y,
-          tile: null,
-          layer: 'activity/Type5',
-        },
-      ]);
-  } while (toCancel);
+  if (nextPos.x == 0) return; //means has no next edge
+  clearRoad();
+  if (!roadRun) return; //no display needed
 
   let actualPos = await WA.player.getPosition();
   actualPos = {
     x: Math.floor(actualPos.x / 33),
-    y: Math.floor(actualPos.y / 33),
+    y: Math.floor(actualPos.y / 33) - 1,
   };
   let i = 0; //debugger
   let again;
@@ -333,7 +322,7 @@ WA.player.onPlayerMove(async () => {
             x: tilePosX,
             y: tilePosY,
             tile: 'pointerBase',
-            layer: 'activity/Type5',
+            layer: 'arrows/Type2',
           },
         ]);
         road.push({ x: tilePosX, y: tilePosY });
@@ -347,7 +336,7 @@ WA.player.onPlayerMove(async () => {
             x: tilePosX,
             y: tilePosY,
             tile: 'pointerBase',
-            layer: 'activity/Type5',
+            layer: 'arrows/Type2',
           },
         ]);
         road.push({ x: tilePosX, y: tilePosY });
@@ -356,171 +345,77 @@ WA.player.onPlayerMove(async () => {
     } while (again && i < 20);
 });
 
-async function getActualActivity(playerPlatform: string) {
-  try {
-    console.log('getActual');
-    if (!ctx) throw 'No ctx detected';
-    await API.getActualNode({ ctxId: ctx })
-      .then(async (response) => {
-        console.log((response.data as PolyglotNodeValidation).platform);
+/*
+let startingMeetingTime: Date;
 
-        if (actualActivity)
-          if (
-            (response.data as PolyglotNodeValidation).platform !=
-            actualActivity.platform
-          ) {
-            const keyEvent =
-              WA.player.state.actualFlow ==
-              '6c7867a1-389e-4df6-b1d8-68250ee4cacb'
-                ? 'challenge45Aquila2025'
-                : 'challenge23Aquila2025';
-            if (
-              WA.player.state.actualFlow ==
-                '6c7867a1-389e-4df6-b1d8-68250ee4cacb' ||
-              WA.player.state.actualFlow ==
-                '6614ff6b-b7eb-423d-b896-ef994d9af097'
-            )
-              levelUp(keyEvent, 100);
-            //LP completed
-            if (actualActivity.platform == 'PapyrusWeb' && projectIdPapy) {
-              const points = (await API.userPapyPoints(projectIdPapy)).data;
-              console.log(points.Grade);
-              const index = (points.Grade as string).indexOf(' out');
-              const grade = parseInt(
-                (points.Grade as string).substring(0, index)
-              );
-              console.log(grade);
-              await levelUp('demo2024event', grade * 10)
-                .then(async (response: LevelUpResponse) => {
-                  console.log(response);
-                  if (response.awardedBadges != null)
-                    await levelUp(
-                      'generalKey',
-                      keyMapping.find((map) => map.key == 'demo2024event')
-                        ?.generalPoints ?? 0
-                    );
-                })
-                .catch((e) => console.log(e));
-            } else {
-              try {
-                await levelUp(
-                  keyMapping.find((map) =>
-                    map.cases.includes(actualActivity.platform)
-                  )?.key ?? '',
-                  50
-                )
-                  .then(async (response: LevelUpResponse) => {
-                    if (response.awardedBadges != null)
-                      await levelUp(
-                        'generalKey',
-                        keyMapping.find((map) =>
-                          map.cases.includes(actualActivity.platform)
-                        )?.generalPoints ?? 0
-                      );
-                  })
-                  .catch((e) => console.log(e));
-              } catch (error) {
-                console.log(error);
-              }
-              console.log('platform point given');
-            }
-          }
-        actualActivity = response.data;
-        console.log(actualActivity.validation);
-        if (
-          !actualActivity.validation[0] &&
-          playerPlatform == actualActivity.platform
-        ) {
-          //LP completed
-          console.log('LP point given');
-          await levelUp('keyLP', 100).catch((e) => console.log(e));
-          WA.player.state.actualFlow = '';
-          ctx = undefined;
-        }
-        if (actualActivity.platform == 'PapyrusWeb') {
-          WA.room.showLayer('PapyrusWebIcon');
-          WA.room.hideLayer('CollaborativeIcon');
-        } else {
-          WA.room.showLayer('CollaborativeIcon');
-          WA.room.hideLayer('PapyrusWebIcon');
-        }
-      })
-      .catch(async (error: any) => {
-        console.log(error);
-        if (error.response.status)
-          if (error.response.status == 400) {
-            //means the educator resetted the player context
-            console.log('ctx reset');
+WA.player.proximityMeeting.onJoin().subscribe(async () => {
+  startingMeetingTime = new Date();
+});
 
-            console.log(String(WA.player.state.actualFlow));
-            await startActivity(String(WA.player.state.actualFlow)).then(
-              async () => {
-                console.log('new activity correctly');
-                await getActualActivity('reset');
-              }
-            );
-            return;
-          }
-        console.error(
-          'Error:',
-          error.response.status,
-          error.response.statusText
-        );
-        throw new Error(`HTTP error! Status: ${error.response.status}`);
-      });
-  } catch (error: any) {
-    // Handle network errors or other exceptions
-    console.error('Error:', error);
-    throw error; // Rethrow the error for the caller to handle
-  }
+WA.player.proximityMeeting.onLeave().subscribe(async () => {
+  const endMeetingTime = new Date();
+  const milliDiff: number =
+    endMeetingTime.getTime() - startingMeetingTime.getTime();
+
+  const totalPoints = Math.floor(Math.floor(milliDiff / 1000) / 60) * 10;
+  const keyEvent =
+    WA.player.state.actualFlow == '6c7867a1-389e-4df6-b1d8-68250ee4cacb'
+      ? 'challenge45Aquila2025'
+      : 'challenge23Aquila2025';
+  if (
+    WA.player.state.actualFlow == '6c7867a1-389e-4df6-b1d8-68250ee4cacb' ||
+    WA.player.state.actualFlow == '6614ff6b-b7eb-423d-b896-ef994d9af097'
+  )
+    levelUp(keyEvent, totalPoints);
+});
+*/
+/*
+function debounce(func: (...args: any[]) => void, timeout = 2000) {
+  let timer: ReturnType<typeof setTimeout>;
+  return (...args: any[]) => {
+    clearTimeout(timer);
+    timer = setTimeout(() => func(...args), timeout);
+  };
 }
 
-async function startActivity(flowId: string): Promise<any> {
-  try {
-    const username = WA.player.name;
-    const response: AxiosResponse = await API.getFirstNode({
-      flowId,
-      username,
-    });
-    console.log(flowId);
-    // Handle error responses
-    if (response.status != 200) {
-      console.error('Error:', response.status, response.statusText);
-      throw new Error(`HTTP error! Status: ${response.status}`);
+function saveInput() {
+  const keyEvent =
+    WA.player.state.actualFlow == '6c7867a1-389e-4df6-b1d8-68250ee4cacb'
+      ? 'challenge45Aquila2025'
+      : 'challenge23Aquila2025';
+  if (
+    WA.player.state.actualFlow == '6c7867a1-389e-4df6-b1d8-68250ee4cacb' ||
+    WA.player.state.actualFlow == '6614ff6b-b7eb-423d-b896-ef994d9af097'
+  )
+    levelUp(keyEvent, 1);
+}
+
+const processChange = debounce(saveInput, 3000);*/
+
+function registerAnalyticsAction<T extends AnalyticsActionBody>( //modificare per le action dell'entryPoint
+  action: T
+): void {
+  if ('actionType' in action) {
+    switch (action.actionType) {
+      case 'gradeAction':
+        if (!('flow' in action.action && 'grade' in action.action)) {
+          throw new Error('Invalid GradeAction structure');
+        }
+        break;
+      default:
+        throw new Error(`Unknown actionType: ${action.actionType}`);
     }
-    ctx = response.data.ctx;
-    let flowsUser = WA.player.state.flows as [any];
-
-    if (flowsUser != undefined)
-      if (
-        (flowsUser as [{ flowId: string; ctx: string }]).find((flow) => {
-          if (flow != null) return flowId == flow.flowId;
-          return false;
-        })
-      )
-        flowsUser.find((flow) => {
-          if (flow) return flowId == flow.flowId;
-          return false;
-        }).ctx = ctx;
-      //update ctx of a already started LP
-      else flowsUser[flowsUser.length + 1] = { flowId: flowId, ctx: ctx };
-    //add the new flowId and ctx to the array
-    else flowsUser = [{ flowId: flowId, ctx: ctx }]; //case where there are no ctx-> create the first one
-
-    WA.player.state.flows = flowsUser;
-    console.log('starting activity done');
-    return;
-  } catch (error) {
-    // Handle network errors or other exceptions
-    console.error('Error:', error);
-    throw error; // Rethrow the error for the caller to handle
   }
+  API.registerAction(action);
 }
 
 // Waiting for the API to be ready
 WA.onInit()
   .then(async () => {
-    if (WA.player.name == 'Tmao' || WA.player.name == 'Antonio Bucchiarone')
+    console.log('user ID: '+WA.player.uuid);
+    WA.room.hideLayer('roof');
+    if (WA.player.name == 'Tmao' || WA.player.name == 'antbucc')
+      //vedi il nostro uuId-> cerca bucc
       WA.room.hideLayer('collision_manager_door');
     console.log('Scripting API ready');
     WA.room.showLayer('PapyrusWebIcon');
@@ -530,8 +425,21 @@ WA.onInit()
       name: 'logo',
       url: './images/solo_logo_32.png',
       position: {
-        x: 220,
-        y: 496,
+        x: 464,
+        y: 464,
+        width: 64,
+        height: 64,
+      },
+      visible: true,
+      origin: 'map',
+      scale: 1,
+    });
+    WA.room.website.create({
+      name: 'logo2',
+      url: './images/solo_logo_32.png',
+      position: {
+        x: 785,
+        y: 464,
         width: 64,
         height: 64,
       },
@@ -544,8 +452,8 @@ WA.onInit()
       name: 'scritta',
       url: './images/solo_scritta_32.png',
       position: {
-        x: 388,
-        y: 496,
+        x: 541,
+        y: 704,
         width: 418,
         height: 64,
       },
@@ -553,82 +461,38 @@ WA.onInit()
       origin: 'map',
       scale: 1,
     });
-    //narrativeMessage();
+
+    WA.room.area.onLeave('silentZone').subscribe(async () => {
+      suggestionBanner('InitBanner');
+    });
+    
     WA.room.area.onLeave('Outside').subscribe(async () => {
-      nextPos = { x: 0, y: 0 };
-      let toCancel;
-      do {
-        toCancel = road.pop();
-        if (toCancel)
-          WA.room.setTiles([
-            {
-              x: toCancel.x,
-              y: toCancel.y,
-              tile: null,
-              layer: 'activity/Type5',
-            },
-          ]);
-      } while (toCancel);
+      roadRun = false;
+      WA.room.showLayer('roof');
+      clearRoad();
+    });
+
+    WA.room.area.onLeave('Outside2').subscribe(async () => {
+      WA.room.showLayer('roof');
     });
 
     WA.room.area.onEnter('Entry').subscribe(async () => {
       try {
+        WA.room.hideLayer('roof');
         closeInstruction();
-        if (!WA.player.state.actualFlow) {
-          WA.room.setTiles([
-          {
-            x: 3,
-            y: 18,
-            tile: 'arrowBase',
-            layer: 'activity/Type5',
-          },
-        ]);
-          instructionPopup = WA.ui.openPopup(
-            'instructions',
-            'You have not selected a Learning Path, please go to the menu area to choose a path.',
-            [
-              {
-                label: 'Close',
-                className: 'normal',
-                callback: () => {
-                  // Close the popup when the "Close" button is pressed.
-                  closeInstruction();
-                },
-              },
-            ]
-          );
-          setTimeout(function () {
-            closeInstruction();
-          }, 3000);
-          return;
-        }
-        //@ts-ignore
 
-        console.log(WA.player.state.actualFlow);
-        const flowsUser = WA.player.state.flows;
-
-        if (flowsUser != undefined)
-          if (
-            (flowsUser as [{ flowId: string; ctx: string }]).find(
-              (flow: { flowId: string }) =>
-                flow?.flowId == WA.player.state.actualFlow
-            ) != undefined
-          ) {
-            ctx = (flowsUser as [{ flowId: string; ctx: string }]).find(
-              (flow: { flowId: string }) =>
-                flow?.flowId == WA.player.state.actualFlow
-            )!.ctx;
-            console.log('ctx already created, continue activity');
-            nextActivityBannerV2('instructions');
-            return;
-          }
-        console.log('starting activity');
-        await startActivity(String(WA.player.state.actualFlow));
-
-        await getActualActivity('instruction');
-
-        nextActivityBannerV2('instructions');
-        //open a timed popup to send the user to the right location
+        suggestionBanner('EntryBanner');
+      } catch (error) {
+        // Handle errors if the API call fails
+        console.error('Failed to get API response:', error);
+      }
+    });
+    WA.room.area.onEnter('Entry2').subscribe(async () => {
+      //dalla entry 2 (basso) bisogna dare l'indicazione per salire
+      try {
+        WA.room.hideLayer('roof');
+        closeInstruction();
+        suggestionBanner('EntryBanner2');
       } catch (error) {
         // Handle errors if the API call fails
         console.error('Failed to get API response:', error);
@@ -637,16 +501,16 @@ WA.onInit()
 
     WA.room.area.onEnter('FlowsMenu').subscribe(async () => {
       try {
+        roadRun = false;
         WA.room.setTiles([
-        {
-          x: 3,
-          y: 18,
-          tile: null,
-          layer: 'activity/Type5',
-        },
-      ]);
-        console.log('testing FlowsMenu');
-        menuPopup = await WA.ui.openPopup(
+          {
+            x: 23, // da cambiare per mondo execution
+            y: 8,
+            tile: null,
+            layer: 'arrows/Type1',
+          },
+        ]);
+        wrongPopup = await WA.ui.openPopup(
           'MenuBanner',
           'Here you can choose which learning path you want to do, access the console to see the possibilities',
           [
@@ -655,13 +519,13 @@ WA.onInit()
               className: 'normal',
               callback: () => {
                 // Close the popup when the "Close" button is pressed.
-                closeMenuPopup();
+                closePopup();
               },
             },
           ]
         );
         setTimeout(function () {
-          closeMenuPopup();
+          closePopup();
         }, 3000);
         closeWebsite();
         webSite = await WA.nav.openCoWebSite(
@@ -678,31 +542,23 @@ WA.onInit()
     });
     WA.room.area.onLeave('FlowsMenu').subscribe(async () => {
       //wrongAreaPopup.close();
+      suggestionBanner('MenuBanner');
       closeWebsite();
     });
 
+    WA.room.area.onEnter('GoToOrg').subscribe(async () =>{
+      WA.nav.goToRoom("https://play.workadventu.re/@/fondazione-bruno-kessler/encore/executionmap");
+      registerAnalyticsAction({
+      timestamp: new Date(),
+      userId: '',
+      actionType: '',
+      zoneId: ZoneId.FreeZone,
+      platform: Platform.WorkAdventure,
+      action: undefined
+    });});
+
     WA.room.area.onEnter('activityManager').subscribe(async () => {
       try {
-        //put the disable of the roof
-        console.log('testing FlowsMenu');
-        menuPopup = WA.ui.openPopup(
-          'MenuBanner',
-          'Here you can choose which learning path you want to do, access the console to see the possibilities',
-          [
-            {
-              label: 'Close',
-              className: 'normal',
-              callback: () => {
-                // Close the popup when the "Close" button is pressed.
-                closeMenuPopup();
-              },
-            },
-          ]
-        );
-        setTimeout(function () {
-          closeMenuPopup();
-        }, 3000);
-
         closeWebsite();
         webSite = await WA.nav.openCoWebSite(
           //@ts-ignore
@@ -721,15 +577,16 @@ WA.onInit()
       closeWebsite();
     });
 
-    // ACTIVITY TYPE 3
-    WA.room.area.onEnter('creativeArea').subscribe(async () => {
+    //gym room
+    WA.room.area.onEnter('GymRoom').subscribe(async () => {
       // If you need to send data from the first call
+      roadRun = false;
       try {
-        console.log('area Activity5');
-
+        console.log('gymRoom');
+        closePopup();
         wrongPopup = WA.ui.openPopup(
-          'BannerA5',
-          'This area is creative area, here you can access the Learning Path editor to create your personal path',
+          'GymBanner',
+          'This is the gym, soon you will be able to train your skills through tailored activities generated from our AI system just for you.',
           [
             {
               label: 'Close',
@@ -744,6 +601,53 @@ WA.onInit()
         setTimeout(function () {
           closePopup();
         }, 3000);
+      } catch (error) {
+        // Handle errors if the API call fails
+        console.error('Failed to get API response:', error);
+      }
+    });
+
+    WA.room.area.onLeave('GymRoom').subscribe(async () => {
+      suggestionBanner('GymBanner');
+    });
+
+    WA.room.area.onEnter('creativeRoom').subscribe(async () => {
+      // If you need to send data from the first call
+      roadRun = false;
+      try {
+        console.log('creativeRoom');
+        closePopup();
+        wrongPopup = WA.ui.openPopup(
+          'CreativeBanner',
+          'This room is a creative area, here you can access the Learning Path editor to create your personal path',
+          [
+            {
+              label: 'Close',
+              className: 'normal',
+              callback: () => {
+                // Close the popup when the "Close" button is pressed.
+                closePopup();
+              },
+            },
+          ]
+        );
+        setTimeout(function () {
+          closePopup();
+        }, 3000);
+      } catch (error) {
+        // Handle errors if the API call fails
+        console.error('Failed to get API response:', error);
+      }
+    });
+
+    WA.room.area.onLeave('creativeRoom').subscribe(async () => {
+      suggestionBanner('CreativeBanner');
+    });
+
+    // creativeArea
+    WA.room.area.onEnter('creativeArea').subscribe(async () => {
+      // If you need to send data from the first call
+      try {
         closeWebsite();
 
         webSite = await WA.nav.openCoWebSite(
@@ -760,8 +664,6 @@ WA.onInit()
     });
 
     WA.room.area.onLeave('creativeArea').subscribe(async () => {
-      //wrongAreaPopup.close();
-      nextActivityBannerV2('BannerA5');
       closeWebsite();
     });
 
@@ -771,33 +673,6 @@ WA.onInit()
           triggerMessage.remove();
         } catch (error) {
           console.log(error);
-        }
-        if (!WA.player.state.actualFlow) {
-          triggerMessage = WA.ui.displayActionMessage({
-            message:
-              "press 'space' or click here to open the instruction WebPage",
-            callback: async () => {
-              instructionPopup = WA.ui.openPopup(
-                'instructions',
-                'You have not selected a Learning Path, please go to the menu area to choose a path.',
-                [
-                  {
-                    label: 'Close',
-                    className: 'normal',
-                    callback: () => {
-                      // Close the popup when the "Close" button is pressed.
-                      closeInstruction();
-                    },
-                  },
-                ]
-              );
-              setTimeout(function () {
-                closeInstruction();
-              }, 3000);
-            },
-          });
-
-          return;
         }
         triggerMessage = WA.ui.displayActionMessage({
           message:
@@ -827,243 +702,40 @@ WA.onInit()
         console.log(error);
       }
       //narrativeMessage();
+      suggestionBanner('InstructionBanner');
       closeWebsite();
     });
 
-    WA.player.state.onVariableChange('actualFlow').subscribe(() => {
-      if (WA.player.state.actualFlow == 'null') WA.state.door = false;
-      closeWebsite();
-      closeMenuPopup();
-      displayMainDoor();
-      menuPopup = WA.ui.openPopup(
-        'MenuBanner',
-        'Path successfully chosen — enter the school zone to begin',
-        [
-          {
-            label: 'Close',
-            className: 'normal',
-            callback: () => {
-              // Close the popup when the "Close" button is pressed.
-              closeMenuPopup();
-            },
-          },
-        ]
-      );
-      setTimeout(function () {
-        closeMenuPopup();
-      }, 3000);
-
-      console.log('website closed');
-      return;
-    });
-
-    WA.player.state.onVariableChange('platform').subscribe((value) => {
-      if (value != 'WebApp') {
-        closeWebsite();
-        console.log('website closed');
-        nextActivityBannerV2('BannerA1');
-      }
-      return;
-    });
-
-    WA.room.area.onEnter('ActivityType1').subscribe(async () => {
-      try {
-        console.log('testing ACTIVITYTYPE1');
-        if (actualActivity.platform != 'WebApp') {
-          console.log('wrong spot, go to another area');
-          wrongAreaFunction('BannerA1', 'WebApp');
-          return;
-        }
-        const URL =
-          //@ts-ignore
-          import.meta.env.VITE_WEBAPP_URL + '/tools/' + ctx;
-
-        closeWebsite();
-        webSite = await WA.nav.openCoWebSite(URL, true);
-        console.log(URL);
-        //open a timed popup to send the user to the right location
-      } catch (error) {
-        // Handle errors if the API call fails
-      }
-    });
-
-    WA.room.area.onLeave('ActivityType1').subscribe(async () => {
-      closeWebsite();
-      nextActivityBannerV2('BannerA1');
-    });
-
-    // ACTIVITY TYPE 2
-    WA.room.area.onEnter('ActivityType2').subscribe(async () => {
+    WA.room.area.onEnter('SocialPoint').subscribe(async () => {
       // If you need to send data from the first call
-      console.log('ctx:', ctx);
+      roadRun = false;
       try {
-        console.log('testing ACTIVITYTYPE2');
-      } catch (error) {
-        // Handle errors if the API call fails
-        console.error('Failed to get API response:', error);
-      }
-    });
-
-    WA.room.area.onLeave('ActivityType2').subscribe(async () => {
-      //wrongAreaPopup.close();
-      nextActivityBannerV2('BannerA2');
-    });
-
-    // ACTIVITY TYPE 3
-    WA.room.area.onEnter('ActivityType3').subscribe(async () => {
-      // If you need to send data from the first call
-      try {
-        console.log('area Activity3');
-
-        if (actualActivity.platform == 'PapyrusWeb') {
-          const waitingPopup = WA.ui.openPopup(
-            'BannerA3',
-            'Loading your assignment inside PapyrusWeb, wait a moment',
-            []
-          );
-          setTimeout(function () {
-            waitingPopup.close();
-          }, 3000);
-
-          await API.createAssigmentPapyrus({
-            ctxId: ctx || '',
-            assignment_id: actualActivity.data.idUML,
-            nomeUtente: WA.player.name,
-          })
-            .then(async (response) => {
-              projectIdPapy = response.data.project_id;
-              representationPapy = response.data.representation_id;
-
-              closeWebsite();
-              webSite = await WA.nav.openCoWebSite(
-                'https://papygame.tech/projects/' +
-                  projectIdPapy +
-                  '/edit/' +
-                  representationPapy +
-                  '?ctxId=' +
-                  ctx,
-                true
-              );
-            })
-            .catch(async (error: any) => {
-              console.log(error);
-              throw new Error(`HTTP error! Status: ${error.response.status}`);
-            });
-        } else if (
-          actualActivity.platform == 'Collaborative' ||
-          actualActivity.platform == 'Eraser'
-        ) {
-          console.log(actualActivity.data);
-          const collaborativeAssignemt = WA.ui.openPopup(
-            'BannerCollaborative',
-            actualActivity.data.assignment ||
-              'Draw some comments and suggestions =D',
-            [
-              {
-                label: 'Close',
-                className: 'normal',
-                callback: () => {
-                  // Close the popup when the "Close" button is pressed.
-                  collaborativeAssignemt.close();
-                },
-              },
-            ]
-          );
-          closeWebsite();
-          webSite = await WA.nav.openCoWebSite(
-            'https://app.eraser.io/workspace/JVoolrO5JJucnQkr1tK7?origin=share',
-            true
-          );
-        }
-      } catch (error) {
-        // Handle errors if the API call fails
-        console.error('Failed to get API response:', error);
-      }
-    });
-
-    WA.room.area.onLeave('ActivityType3').subscribe(async () => {
-      //wrongAreaPopup.close();
-      if (
-        (!ctx && actualActivity.platform == 'Collaborative') ||
-        actualActivity.platform == 'Eraser'
-      ) {
-        console.log('exit Eraser');
-        const satisfiedConditions = actualActivity.validation.filter(
-          (validation) => validation.data.conditionKind == 'pass'
-        );
-        const satisfiedConditionsId = satisfiedConditions.map(
-          (item) => item.id
-        );
-        await API.getNextNode({
-          ctxId: ctx || '',
-          satisfiedConditions: satisfiedConditionsId,
-        });
-      }
-      nextActivityBannerV2('BannerA3');
-      closeWebsite();
-    });
-
-    // ACTIVITY TYPE 4
-    WA.room.area.onEnter('ActivityType4').subscribe(async () => {
-      // If you need to send data from the first call
-      try {
-        if (actualActivity.platform != 'VSCode') {
-          wrongAreaFunction('BannerA4', 'VSCode');
-          return;
-        }
         closePopup();
-        WA.ui.openPopup(
-          'BannerA4',
-          'Your next activity is coding assessment. Click Open Notebook to open the notebook directly on your VSCode Editor',
+        wrongPopup = WA.ui.openPopup(
+          'SocialBanner',
+          'This is the social hub, meet your friends and find new ones, or study quietly in the library.',
           [
-            {
-              label: 'Open Notebook',
-              className: 'normal',
-              callback: () => {
-                // Close the popup when the "Close" button is pressed.
-                WA.nav.openTab(
-                  'vscode://ms-dotnettools.dotnet-interactive-vscode/openNotebook?url=' + //@ts-ignore
-                    import.meta.env.VITE_BACK_URL +
-                    '/api/flows/' +
-                    ctx +
-                    '/run/notebook.dib'
-                );
-                console.log('aa');
-              },
-            },
             {
               label: 'Close',
               className: 'normal',
-              callback: (popup) => {
+              callback: () => {
                 // Close the popup when the "Close" button is pressed.
-                popup.close();
+                closePopup();
               },
             },
           ]
         );
-
-        triggerMessage = WA.ui.displayActionMessage({
-          message:
-            "press 'space' or click here to open the instruction WebPage",
-          callback: async () => {
-            window.open(
-              'vscode://ms-dotnettools.dotnet-interactive-vscode/openNotebook?url=' + //@ts-ignore
-                import.meta.env.VITE_BACK_URL +
-                '/api/flows/' +
-                ctx +
-                '/run/notebook.dib',
-              '_blank'
-            );
-          },
-        });
+        setTimeout(function () {
+          closePopup();
+        }, 3000);
       } catch (error) {
         // Handle errors if the API call fails
         console.error('Failed to get API response:', error);
       }
     });
 
-    WA.room.area.onLeave('ActivityType4').subscribe(async () => {
-      nextActivityBannerV2('BannerA4');
+    WA.room.area.onLeave('SocialPoint').subscribe(async () => {
+      suggestionBanner('SocialBanner');
     });
 
     //cheat way to remove point from the player
