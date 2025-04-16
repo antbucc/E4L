@@ -412,10 +412,10 @@ function registerAnalyticsAction<T extends AnalyticsActionBody>( //modificare pe
 // Waiting for the API to be ready
 WA.onInit()
   .then(async () => {
-    console.log('player ID: '+WA.player.playerId);
+    console.log('user ID: '+WA.player.uuid);
     WA.room.hideLayer('roof');
     if (WA.player.name == 'Tmao' || WA.player.name == 'antbucc')
-      //vedi il nostro playerId-> cerca bucc
+      //vedi il nostro uuId-> cerca bucc
       WA.room.hideLayer('collision_manager_door');
     console.log('Scripting API ready');
     WA.room.showLayer('PapyrusWebIcon');
@@ -448,7 +448,6 @@ WA.onInit()
       scale: 1,
     });
     displayMainDoor();
-    WA.player.playerId;
     WA.room.website.create({
       name: 'scritta',
       url: './images/solo_scritta_32.png',
